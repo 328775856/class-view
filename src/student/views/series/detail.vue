@@ -101,10 +101,28 @@
         this.start = true;
         this.$store.dispatch('fetchSeriesCheckOrder', this.$route.params).then((data) => {
           // 跳转到订单页
-          if(this.$route.query.origin) {
-            //
+          if (window.__wxjs_environment === 'miniprogram') {
+            this.$http.post('/series-order.api', {
+              series_sn: this.$route.params.series_sn,
+              origin: this.$route.query.origin
+            }, {emulateJSON: true}).then((response) => {
+              let res = response.body
+              this.start = false;
+              if (res.error === '0') {
+                wx.miniProgram.navigateTo({
+                  url: `/page/pay/index?order=${res.data.order}&tsn=${this.$route.params.series_sn}`
+                });
+              } else {
+                swal({
+                  title: '错误提醒',
+                  text: (res.message ? res.message : '请求错误'),
+                  confirmButtonText: '知道了'
+                })
+              }
+            });
+          } else if(this.$route.query.origin) {
             this.$router.push({ name: 'seriesOrder', params: { ...this.$route.params }, query: {origin: this.$route.query.origin} });
-            }else {
+          }else {
             this.$router.push({ name: 'seriesOrder', ...this.$route.params });
           }
 

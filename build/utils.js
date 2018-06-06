@@ -85,6 +85,7 @@ exports.getEntries = function (globPath) {
     var pathname = tmp.splice(1, 1); // splice(0, 1)取tmp数组中第一个元素
     // ***************end***************
     entries[pathname] = entry;
+   // console.log(tmp)
   });
   // console.log(entries);
   return entries;

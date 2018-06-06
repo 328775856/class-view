@@ -1,6 +1,7 @@
 <template>
   <ul>
     <li v-for="(list, index) in prepareList">
+      <img id="tag"  v-if="list.type == 'mark'" src="../../assets/img/tag.png">
       <span>No.{{++index}}</span>
       <!--<p v-text="list.tms"></p>-->
       <div class="audio" v-if="list.type == 'audio'">
@@ -9,7 +10,7 @@
       </div>
       <div class="image" v-if="list.type == 'image'">
         <a :href="list.content" target="view_window">
-          <img :src="list.content" />
+          <img :src="list.content"/>
         </a>
       </div>
       <div class="video" v-if="list.type == 'video'">
@@ -17,12 +18,17 @@
           您的浏览器不支持 video 标签。
         </video>
       </div>
-      <div class="text" v-if="list.type == 'text'" v-html="textFormat(list.content)"></div>
+      <input type="text" class="text" v-if="list.type == 'text'" :value="textFormat(list.content)"
+             @focus="focus" @keyup.enter="changeText($event, index)" @blur="blur"/>
+      <input type="text" class="text" v-if="list.type == 'mark'" :value="textFormat(list.content)"
+             @focus="focus" @keyup.enter="changeMark($event, index)" @blur="blur"/>
       <div class="handle">
         <span class="disabled" v-if="index == 1"><i class="iconfont icon-shangyi"></i></span>
-        <span class="cursor-pointer" title="上移" @click="handUp(index)" v-if="index > 1"><i class="iconfont icon-shangyi"></i></span>
+        <span class="cursor-pointer" title="上移" @click="handUp(index)" v-if="index > 1"><i
+          class="iconfont icon-shangyi"></i></span>
         <span class="disabled" v-if="index >= prepareList.length"><i class="iconfont icon-xiayi"></i></span>
-        <span class="cursor-pointer" title="下移" @click="handDown(index)" v-if="index < prepareList.length"><i class="iconfont icon-xiayi"></i></span>
+        <span class="cursor-pointer" title="下移" @click="handDown(index)" v-if="index < prepareList.length"><i
+          class="iconfont icon-xiayi"></i></span>
         <span class="cursor-pointer" title="移动" @click="handInsert(index)"><i class="iconfont icon-charu"></i></span>
         <span class="cursor-pointer" title="删除" @click="handDelete(index)"><i class="iconfont icon-105"></i></span>
       </div>
@@ -31,16 +37,15 @@
 </template>
 
 <script type="text/javascript">
-  import { mapGetters } from 'vuex';
-  import { trimStr } from '@lib/js/mUtils';
+  import {mapGetters} from 'vuex';
+  import {trimStr} from '@lib/js/mUtils';
   import vAudio from '@teacher/views/prepare/audio.vue';
 
   // 定义滚动DOM
   let prepareScroll = null;
-  let scrollTop     = null;
+  let scrollTop = null;
 
-  export default
-  {
+  export default {
     name: 'v-prepare',
     props: {
       prepareList: {
@@ -51,8 +56,7 @@
       vAudio
     },
     computed: {
-      ...mapGetters([
-      ])
+      ...mapGetters([])
     },
     data() {
       return {
@@ -71,7 +75,7 @@
           cursor_b: this.prepareList[--index_b].seqno,
         };
         // 交换记录
-        this.$store.dispatch('fetchPrepareSwap',{lesson_sn:this.lesson_sn, ...cursor}).then((data) => {
+        this.$store.dispatch('fetchPrepareSwap', {lesson_sn: this.lesson_sn, ...cursor}).then((data) => {
           // 交换记录
           callback();
         }, (err) => {
@@ -88,7 +92,7 @@
           before: this.prepareList[--index_b].seqno,
         };
         // 交换记录
-        this.$store.dispatch('fetchPrepareJump',{lesson_sn:this.lesson_sn, ...cursor}).then((data) => {
+        this.$store.dispatch('fetchPrepareJump', {lesson_sn: this.lesson_sn, ...cursor}).then((data) => {
           // 交换记录
           callback(data);
         }, (err) => {
@@ -102,26 +106,26 @@
       handUp(index) {
         let up_index = index - 1;
         // 上移
-        this.handSwap(index, up_index, ()=>{
+        this.handSwap(index, up_index, () => {
           //this.$router.go(0);
           let newList = [...this.prepareList];
           // 记住位置
           this.recordScrollTop();
           //
-          this.swapList(newList, index-1, up_index-1);
+          this.swapList(newList, index - 1, up_index - 1);
         });
       },
       handDown(index) {
         // 下移
         let down_index = index + 1;
         // 上移
-        this.handSwap(index, down_index, ()=>{
+        this.handSwap(index, down_index, () => {
           //this.$router.go(0);
           let newList = [...this.prepareList];
           // 记住位置
           this.recordScrollTop();
           //
-          this.swapList(newList, index-1, down_index-1);
+          this.swapList(newList, index - 1, down_index - 1);
         });
       },
       handInsert(index) {
@@ -131,15 +135,15 @@
           type: 'input',
           inputClass: 'spec-input',
           confirmButtonText: '确定',
-          showCancelButton:true,
+          showCancelButton: true,
           closeOnConfirm: false,
           cancelButtonText: '取消',
-        },()=>{
+        }, () => {
           // 当前input dom
           let input = document.querySelector('.show-input').querySelector('input');
           let value = trimStr(input.value);
           // 是否是有效值
-          if(value <= 0 || value > this.prepareList.length){
+          if (value <= 0 || value > this.prepareList.length) {
             return swal({
               title: '错误提醒',
               text: `有效值范围在1~${this.prepareList.length}之间`,
@@ -147,7 +151,7 @@
             });
           }
           // 是否有值
-          if(!value){
+          if (!value) {
             return swal({
               title: '错误提醒',
               text: '输入框不为空',
@@ -155,7 +159,7 @@
             });
           }
           // 是否是数字
-          if(!/^\d+$/.test(value)){
+          if (!/^\d+$/.test(value)) {
             return swal({
               title: '错误提醒',
               text: '请输入数值',
@@ -163,10 +167,10 @@
             });
           }
           // 进行交换
-          this.handJump(index, value, (data)=>{
+          this.handJump(index, value, (data) => {
             let newList = [...this.prepareList];
             //
-            this.jumpList(newList, index-1, value-1, data);
+            this.jumpList(newList, index - 1, value - 1, data);
             // 关闭弹窗
             swal.close();
           });
@@ -182,7 +186,7 @@
         arr[index1].seqno = seqno1;
         arr[index2].seqno = seqno2;
         // 开始
-        setTimeout(()=>{
+        setTimeout(() => {
           this.$store.commit('UPDATE_PREPARE_LIST', arr);
           // 调到原先指定的位置
           this.goToScroll(scrollTop);
@@ -195,7 +199,7 @@
         // 替换seqno
         arr[index2].seqno = seqno;
         //
-        setTimeout(()=>{
+        setTimeout(() => {
           this.$store.commit('UPDATE_PREPARE_LIST', arr);
           // 调到指定的位置
           this.jumpScrollTop(index2);
@@ -207,21 +211,21 @@
           title: '',
           text: `确定要删除 No.${index} 吗？`,
           confirmButtonText: '确定',
-          showCancelButton:true,
+          showCancelButton: true,
           closeOnConfirm: false,
           cancelButtonText: '取消',
-        },()=>{
-          let sign = index-1;
+        }, () => {
+          let sign = index - 1;
           let cursor = this.prepareList[sign].seqno;
           // 开始删除记录
-          this.$store.dispatch('fetchPrepareDelete',{lesson_sn:this.lesson_sn, cursor:cursor}).then((data) => {
+          this.$store.dispatch('fetchPrepareDelete', {lesson_sn: this.lesson_sn, cursor: cursor}).then((data) => {
             // 删除成功
             let newList = [...this.prepareList];
             newList.splice(sign, 1);
             // 关闭弹窗
             swal.close();
             // 开始
-            setTimeout(()=>{
+            setTimeout(() => {
               this.$store.commit('UPDATE_PREPARE_LIST', newList);
             }, 100);
           }, (err) => {
@@ -235,41 +239,79 @@
       },
       goToScroll(scrollHeight) {
         // 是否有
-        if(!prepareScroll){
+        if (!prepareScroll) {
           prepareScroll = document.getElementById('prepare-body');
         }
         //
-        setTimeout(()=>{
+        setTimeout(() => {
           prepareScroll.scrollTop = scrollHeight;
         }, 100);
       },
       recordScrollTop() {
         // 是否有
-        if(!prepareScroll){
+        if (!prepareScroll) {
           prepareScroll = document.getElementById('prepare-body');
         }
         scrollTop = prepareScroll.scrollTop;
       },
       jumpScrollTop(index) {
         // 是否有
-        if(!prepareScroll){
+        if (!prepareScroll) {
           prepareScroll = document.getElementById('prepare-body');
         }
         // 找到指定的children
-        setTimeout(()=>{
+        setTimeout(() => {
           prepareScroll.scrollTop = prepareScroll.querySelector('ul').children[index].offsetTop - 150;
         }, 100);
       },
-      textFormat(value){
+      textFormat(value) {
         return value.replace(/\n/g, '<br>');
       },
-      showNote(value){
+      showNote(value) {
         swal({
           title: '备注内容',
           text: value,
           confirmButtonText: "知道了"
         });
       },
+      focus(e) {
+        e.currentTarget.className = 'active-text';
+      },
+      blur(e) {
+        e.currentTarget.className = 'text';
+      },
+      changeText(e, index) {
+        this.$store.dispatch('fetchPrepareCreateText', {
+          lesson_sn: this.lesson_sn,
+          content: e.currentTarget.value,
+          update: this.prepareList[index - 1].seqno
+        }).then((data) => {
+          // console.log(data);
+        }, (err) => {
+          // 异常
+          swal({
+            title: '错误提醒',
+            text: err.message,
+            confirmButtonText: "知道了"
+          });
+        });
+      },
+      changeMark(e, index) {
+        this.$store.dispatch('fetchPrepareCreateMark', {
+          lesson_sn: this.lesson_sn,
+          content: e.currentTarget.value,
+          update: this.prepareList[index - 1].seqno
+        }).then((data) => {
+          // console.log(data);
+        }, (err) => {
+          // 异常
+          swal({
+            title: '错误提醒',
+            text: err.message,
+            confirmButtonText: "知道了"
+          });
+        });
+      }
     },
   };
 </script>

@@ -324,4 +324,8 @@
       }
     }
   }
+  .content.detail .markdown-body em{
+    color: #666;
+    font-style: italic;
+  }
 </style>

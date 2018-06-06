@@ -1,4 +1,11 @@
 .prepare
+  .insert-point
+    right: 100px;
+    padding: 2px;
+    color: #12b7f5;
+    input
+      text-align: center;
+      border: 1px solid #12b7f5;
   ul
     margin: 0;
     padding: 0;
@@ -34,21 +41,21 @@
           display: box;
           padding: 15px 0;
           border-bottom: 1px solid #EFEFF4;
-          >*
+          > *
             display: -webkit-box;
             display: box;
-          >:first-child
+          > :first-child
             width: 65px;
-            -webkit-box-align:center;
-            -moz-box-align:center;
-          >:nth-child(2)
+            -webkit-box-align: center;
+            -moz-box-align: center;
+          > :nth-child(2)
             width: 430px;
-            -webkit-box-align:center;
-            -moz-box-align:center;
+            -webkit-box-align: center;
+            -moz-box-align: center;
           .handle
-            -webkit-box-align:center;
-            -moz-box-align:center;
-            >span
+            -webkit-box-align: center;
+            -moz-box-align: center;
+            > span
               display: inline-block;
               margin-left: 5px;
               padding: 6px 7px;
@@ -63,7 +70,7 @@
             margin-left: 10px;
             width: 130px;
             height: 20px;
-            text-overflow:ellipsis;
+            text-overflow: ellipsis;
             white-space: nowrap;
             overflow: hidden;
             cursor: pointer;
@@ -91,10 +98,10 @@
     .textarea-more
       position: relative;
       height: 60px;
-      >*
+      > *
         position: absolute;
         top: 13px;
-      >button
+      > button
         right: 0;
         padding: 4px 10px;
         font-size: 14px;
@@ -150,9 +157,9 @@
     height: 100%;
     display: flex;
     -webkit-display: flex;
-    align-items:center;
+    align-items: center;
     justify-content: center;
-    background-color: rgba(0,0,0,.3);
+    background-color: rgba(0, 0, 0, .3);
     .modal-body {
       position: relative;
       width: 310px;
@@ -219,11 +226,11 @@
             max-width: 100%;
             min-height: auto;
             max-height: 100%;
-            transform: translate(-50%,-50%);
-            -ms-transform: translate(-50%,-50%); 	/* IE 9 */
-            -moz-transform: translate(-50%,-50%); 	/* Firefox */
-            -webkit-transform: translate(-50%,-50%); /* Safari 和 Chrome */
-            -o-transform: translate(-50%,-50%); 	/* Opera */
+            transform: translate(-50%, -50%);
+            -ms-transform: translate(-50%, -50%); /* IE 9 */
+            -moz-transform: translate(-50%, -50%); /* Firefox */
+            -webkit-transform: translate(-50%, -50%); /* Safari 和 Chrome */
+            -o-transform: translate(-50%, -50%); /* Opera */
           }
         }
       }
@@ -254,7 +261,7 @@
             border-radius: 0 0 0 4px;
             -webkit-border-radius: 0 0 0 4px;
           }
-          button+button {
+          button + button {
             border-left: 1px solid #12b7f5;
             border-radius: 0 0 4px 0;
             -webkit-border-radius: 0 0 4px 0;
@@ -279,4 +286,61 @@
         -webkit-border-radius: 0 0 4px 4px;
       }
     }
+  }
+
+  .box-more
+    img
+      width: 24px;
+      height: 24px;
+
+  .modal-body-mark
+    width: 30%;
+    padding: 40px 40px;
+    background: #fff;
+    .textarea-frm
+      text-align: right
+    button
+      margin-top 10px
+      padding: 4px 10px;
+      font-size: 14px;
+      border: 0 none;
+      border-radius: 14px;
+      -webkit-border-radius: 14px;
+      color: #fff;
+      background: #12b7f5;
+      cursor: pointer;
+    .textarea
+      background: #fff;
+      padding: 5px 10px;
+      border: 1px solid #e6eaf2;
+      border-radius: 4px;
+      -webkit-border-radius: 4px;
+    textarea
+      padding: 0;
+      width: 100%;
+      height: 60px;
+      font-size: 14px;
+      outline: none;
+      border: 0 none;
+
+  .text {
+    border: 0;
+  }
+
+  .active-text {
+    border: 1px solid lightskyblue;
+    border-radius: 5px;
+  }
+  #tag {
+    position: absolute;
+    top: 24px;
+    left: 50px;
+    width: 12px;
+    height: 14px;
+  }
+  #tag + span {
+    width: 65px;
+  }
+  #tag + span + input {
+    width: 430px;
   }

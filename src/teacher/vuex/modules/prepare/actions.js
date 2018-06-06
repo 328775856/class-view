@@ -135,6 +135,21 @@ export const fetchPrepareCreateText = ({commit}, body) => {
       return Promise.reject(error)
     })
 };
+export const fetchPrepareCreateMark = ({commit}, body) => {
+  const url = `${_prefix}/prepare-create-mark.api`;
+
+  return _post({ url, body }, commit)
+    .then((json) => {
+      if (json.error == 0) {
+        //
+        return Promise.resolve(json.data);
+      }
+      return Promise.reject(json)
+    })
+    .catch((error) => {
+      return Promise.reject(error)
+    })
+};
 
 export const fetchPrepareCreateVideo = ({commit}, body) => {
   const url = `${_prefix}/prepare-create-video.api`;

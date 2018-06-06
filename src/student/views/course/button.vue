@@ -109,7 +109,12 @@
             // 是否需要付费
             if(data.price > 0){
               // 发起支付请求
-              if(data.margin < 0 && (data.surplus == data.price)){
+              if (data.surplus > 0 && window.__wxjs_environment === 'miniprogram') {
+                wx.miniProgram.navigateTo({
+                  url: `/page/pay/index?order=${data.order}&tsn=${query.lesson_sn}`
+                });
+                this.paying = false
+              } else if(data.margin < 0 && (data.surplus == data.price)){
                 this.callpay(data.pay_data);
               }else{
                 this.payShow = true;
@@ -173,7 +178,14 @@
             //
             if(this.enrollData.margin < 0){
               // 开始微信支付
-              this.callpay(this.enrollData.pay_data);
+              if (this.enrollData.pay_data === false && window.__wxjs_environment === 'miniprogram') {
+                wx.miniProgram.navigateTo ({
+                  url: `/page/pay/index?order=${data.order}&tsn=${query.lesson_sn}`
+                })
+                this.paying = false;
+              } else {
+                this.callpay(this.enrollData.pay_data);
+              }
             }else{
               // 普通支付
               this.generalpay(this.enrollData.order);
