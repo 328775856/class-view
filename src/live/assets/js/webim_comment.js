@@ -147,6 +147,7 @@ export const onMsgNotify = function(newMsgList) {
         if(avatar){
           msg.avatar = avatar;
           //
+          console.log('cuz', msg)
           this.$store.commit('UPDATE_MESSAGE', msg);
           //
           this.$nextTick(()=>{
@@ -154,6 +155,7 @@ export const onMsgNotify = function(newMsgList) {
           });
         }else{
           // 消息推送
+          console.log('duk', msg)
           this.$store.commit('UPDATE_MESSAGE', msg);
           //
           this.$nextTick(()=>{
@@ -229,8 +231,15 @@ export const exportAssembleMsg = (msg) => {
   //解析消息
   if (msg.content[0].MsgType === 'SYSTEM') {
     assemble.isSystem = true;
+    assemble.content = msg.content;
+  } else {
+    assemble.content = convertHistoryMsg(msg);
+    if (assemble.content[0] && assemble.content[0].bookmark) {
+      assemble.isSystem = true
+      assemble.bookmark = assemble.content[0].bookmark
+      assemble.bookmark.cursor = assemble.cursor
+    }
   }
-  assemble.content = convertHistoryMsg(msg);
 
   return assemble;
 };
@@ -589,7 +598,11 @@ function convertHistoryMsg(msg) {
         //html += convertLocationMsgToHtml(content);
         break;
       case webim.MSG_ELEMENT_TYPE.CUSTOM:
-        contents[i].custom = convertCustomMsg(content);
+         let ctt = convertCustomMsg(content);
+         contents[i].custom = ctt;
+         if (ctt[0].type == 'MARK') {
+           contents[i].bookmark = ctt[0]
+         }
         break;
       case webim.MSG_ELEMENT_TYPE.GROUP_TIP:
         contents[i].text = convertHistoryGroupTipMsg(content);
@@ -1013,6 +1026,13 @@ function convertCustomMsg(content) {
         id: Math.round(Math.random() * 4294967296),
         type: 'QUOTE',
         text : content.data,
+      }];
+      break;
+    case 'MARK':
+      return [{
+        id: Math.round(Math.random() * 4294967296),
+        type: 'MARK',
+        text: content.data
       }];
       break;
     case '__SYSTEM__':

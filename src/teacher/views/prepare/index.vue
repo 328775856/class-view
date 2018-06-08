@@ -41,11 +41,8 @@
                 <input type="file" @change="selectAudio"/>
               </span>
             </span>
-            <span class="box-more" @click="isMarkShow">
-              <img src="../../assets/img/tag.png">
-              <!--<span class="iconfont icon-tag">-->
-              <!--<input type="text" @change="selectAudio"/>-->
-              <!--</span>-->
+            <span class="box-more" @click="isMarkModalShow">
+              <span class="iconfont icon-bookmark"></span>
             </span>
           </div>
         </div>
@@ -55,13 +52,13 @@
     <audituon :auditionData="auditionData" @closeAudition="closeAudition" @completeUpload="startGoToScroll"
               v-if="startAudituon"></audituon>
     <!-- 遮罩层 -->
-    <div class="modal-dialog" v-if="markShow">
+    <div class="modal-dialog" v-if="markModalShow">
       <div class="modal-body-mark">
         <div class="textarea-frm">
           <div class="textarea">
-            <textarea v-model="markVal" placeholder="请输入书签文字..."></textarea>
+            <textarea v-model="markVal" placeholder="请输入书签文字(不超过12个文字)"></textarea>
           </div>
-          <button class="box-send cancel" @click="isMarkShow">取消</button>
+          <button class="box-send cancel" @click="isMarkModalShow">取消</button>
           <button class="box-send" @click="sendMark" title="Ctrl+Enter或Alt+S" v-if="!msgSending">发送</button>
           <button class="box-send" title="Ctrl+Enter或Alt+S" v-if="msgSending">发送中...</button>
         </div>
@@ -168,7 +165,7 @@
         lesson_sn: '',
         startSend: false,
         imgShow: false,
-        markShow: false,
+        markModalShow: false,
         videoShow: false,
         videoInfo: null,
         imgInfo: {
@@ -512,32 +509,35 @@
               confirmButtonText: '知道了',
             });
             this.msgSending = false;
-          }
-          this.$store.dispatch('fetchPrepareCreateText', {
-            lesson_sn: this.lesson_sn,
-            content: this.msgVal,
-            insert: this.prepareList[this.iPoint - 1].seqno,
-          }).then((data) => {
-            // 发送成功
-            this.msgVal = '';
-            // 添加
-            this.$store.commit('ADD_PREPARE_LIST', data);
-            // 关闭发送状态
-            this.msgSending = false;
-            // 启动滚动条
-            this.goToScroll();
-            // 重新获取列表
-            this.getAllPrepareList();
-          }, (err) => {
-            // 关闭发送状态
-            this.msgSending = false;
-            // 异常
-            swal({
-              title: '错误提醒',
-              text: err.message,
-              confirmButtonText: '知道了',
+          } else {
+            this.$store.dispatch('fetchPrepareCreateText', {
+              lesson_sn: this.lesson_sn,
+              content: this.msgVal,
+              insert: this.prepareList[this.iPoint - 1].seqno,
+            }).then((data) => {
+              // 发送成功
+              this.msgVal = '';
+              // 添加
+              this.$store.commit('ADD_PREPARE_LIST', data);
+              // 关闭发送状态
+              this.msgSending = false;
+              // 启动滚动条
+              this.goToScroll();
+              // 重新获取列表
+              this.getAllPrepareList();
+              this.iPoint = Number(this.iPoint);
+              this.iPoint += 1;
+            }, (err) => {
+              // 关闭发送状态
+              this.msgSending = false;
+              // 异常
+              swal({
+                title: '错误提醒',
+                text: err.message,
+                confirmButtonText: '知道了',
+              });
             });
-          });
+          }
         } else {
           this.$store.dispatch('fetchPrepareCreateText', {
             lesson_sn: this.lesson_sn,
@@ -563,8 +563,8 @@
           });
         }
       },
-      isMarkShow() {
-        this.markShow = !this.markShow;
+      isMarkModalShow() {
+        this.markModalShow = !this.markModalShow;
       },
       sendMark() {
         // 打开发送状态
@@ -583,6 +583,7 @@
           this.msgSending = false;
           // 启动滚动条
           this.goToScroll();
+          this.markModalShow = false
         }, (err) => {
           // 关闭发送状态
           this.msgSending = false;
@@ -593,7 +594,6 @@
             confirmButtonText: '知道了'
           });
         });
-        this.markShow = false
       },
       v_keydown(event) {
         let e = event || window.event;

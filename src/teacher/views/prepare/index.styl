@@ -288,10 +288,8 @@
     }
   }
 
-  .box-more
-    img
-      width: 24px;
-      height: 24px;
+  .icon-bookmark:before
+    cursor: pointer;
 
   .modal-body-mark
     width: 30%;
@@ -332,15 +330,16 @@
     border-radius: 5px;
   }
   #tag {
-    position: absolute;
-    top: 24px;
-    left: 50px;
-    width: 12px;
-    height: 14px;
+    width auto;
+    color: #12b7f5;
+    padding: 2px 2px 0 0;
   }
-  #tag + span {
-    width: 65px;
+  span#tag:before {
+    display: block;
+    font-size: 14px;
+    cursor: default;
   }
-  #tag + span + input {
-    width: 430px;
+  #tag + input {
+    width: 414px;
+    padding-bottom: 4px;
   }

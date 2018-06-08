@@ -45,6 +45,7 @@ const state = {
   audioCompressComplete: false,
   footerConf: null,
   fullMember: false,
+  bookmarkList: [],
   liveHost: (process.env.NODE_ENV=='production'?process.env.LIVE_HOST.replace(/\/$/,''):'/api'),
   studentHost:(process.env.NODE_ENV=='production'?process.env.STUDENT_HOST.replace(/\/$/,'?'):'/student.html?'),
   teacherHost:(process.env.NODE_ENV=='production'?process.env.TEACHER_HOST.replace(/\/$/,''):'/teacher.html'),
@@ -75,17 +76,52 @@ const mutations = {
   },
   //
   UPDATE_MESSAGE(state, data){
+    console.log('msg', data)
     if(Array.isArray(data)){
+      for (let item of data) {
+       if (item.content[0].type == 'TIMCustomElem' && item.content[0].custom[0].type == 'MARK') {
+        item.isSystem = true
+        item.bookmark = item.content[0].custom[0];
+        if (item.bookmark) {
+          state.bookmarkList.push(item.bookmark);
+        }
+       }
+      }
+      console.log(data)
       state.messageInfo = [...state.messageInfo, ...data];
     }else if(Object.prototype.toString.call(data) == '[object Object]'){
+      if (data.content[0].type == 'TIMCustomElem' && data.content[0].custom[0].type == 'MARK') {
+        data.isSystem = true
+        data.bookmark = data.content[0].custom[0];
+        if (data.bookmark) {
+          state.bookmarkList.push(data.bookmark);
+        }
+      }
       state.messageInfo = [...state.messageInfo, data];
     }
   },
   //
   UPDATE_HISTORY_MESSAGE(state, data){
+    console.log('history', data)
     if(Array.isArray(data)){
+      for (let item of data) {
+        if (item.content[0].type == 'TIMCustomElem' && item.content[0].custom[0].type == 'MARK') {
+          item.isSystem = true
+          item.bookmark = item.content[0].custom[0];
+          if (item.bookmark) {
+            state.bookmarkList.push(item.bookmark);
+          }
+        }
+      }
       state.messageInfo = [...data, ...state.messageInfo];
     }else if(Object.prototype.toString.call(data) == '[object Object]'){
+      if (data.content[0].type == 'TIMCustomElem' && data.content[0].custom[0].type == 'MARK') {
+        data.isSystem = true
+        data.bookmark = data.content[0].custom[0];
+        if (data.bookmark) {
+          state.bookmarkList.push(data.bookmark);
+        }
+      }
       state.messageInfo = [data, ...state.messageInfo];
     }
   },

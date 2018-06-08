@@ -1,29 +1,29 @@
 <template>
   <ul>
     <li v-for="(list, index) in prepareList">
-      <img id="tag"  v-if="list.type == 'mark'" src="../../assets/img/tag.png">
       <span>No.{{++index}}</span>
       <!--<p v-text="list.tms"></p>-->
-      <div class="audio" v-if="list.type == 'audio'">
+      <div class="audio" v-if="list.type === 'audio'">
         <v-audio :id="list.seqno" :src="list.content"></v-audio>
         <p class="note" v-if="list.note" v-text="list.note" :title="list.note" @click="showNote(list.note)"></p>
       </div>
-      <div class="image" v-if="list.type == 'image'">
+      <div class="image" v-if="list.type === 'image'">
         <a :href="list.content" target="view_window">
           <img :src="list.content"/>
         </a>
       </div>
-      <div class="video" v-if="list.type == 'video'">
+      <div class="video" v-if="list.type === 'video'">
         <video :src="list.content" controls="controls">
           您的浏览器不支持 video 标签。
         </video>
       </div>
-      <input type="text" class="text" v-if="list.type == 'text'" :value="textFormat(list.content)"
-             @focus="focus" @keyup.enter="changeText($event, index)" @blur="blur"/>
-      <input type="text" class="text" v-if="list.type == 'mark'" :value="textFormat(list.content)"
-             @focus="focus" @keyup.enter="changeMark($event, index)" @blur="blur"/>
+      <span  id="tag"  v-if="list.type === 'mark'" class="iconfont icon-bookmark"></span>
+      <input type="text" class="text" v-if="list.type === 'text'" :value="textFormat(list.content)"
+             @focus="focus" @blur="blurText($event, index)"/>
+      <input type="text" class="text" v-if="list.type === 'mark'" :value="textFormat(list.content)"
+             @focus="focus" @blur="blurMark($event, index)"/>
       <div class="handle">
-        <span class="disabled" v-if="index == 1"><i class="iconfont icon-shangyi"></i></span>
+        <span class="disabled" v-if="index === 1"><i class="iconfont icon-shangyi"></i></span>
         <span class="cursor-pointer" title="上移" @click="handUp(index)" v-if="index > 1"><i
           class="iconfont icon-shangyi"></i></span>
         <span class="disabled" v-if="index >= prepareList.length"><i class="iconfont icon-xiayi"></i></span>
@@ -277,8 +277,13 @@
       focus(e) {
         e.currentTarget.className = 'active-text';
       },
-      blur(e) {
+      blurText(e, index) {
         e.currentTarget.className = 'text';
+        this.$options.methods.changeText.bind(this)(e, index);
+      },
+      blurMark(e, index) {
+        e.currentTarget.className = 'text';
+        this.$options.methods.changeMark.bind(this)(e, index);
       },
       changeText(e, index) {
         this.$store.dispatch('fetchPrepareCreateText', {

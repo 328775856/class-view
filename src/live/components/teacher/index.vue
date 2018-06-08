@@ -27,6 +27,10 @@
             </video>
           </a>
         </div>
+        <div class="list-mark" v-if="list.type== 'mark'">
+          <i class="iconfont icon-bookmark"></i>
+          <span>{{list.content}}</span>
+        </div>
       </li>
       <li class="center" v-if="!prepareList.length">
         <span href="javascript:;">
@@ -91,6 +95,13 @@
             cursor: seqno,
             lesson_sn: this.userInfo.lesson_sn,
           };
+          if(!prepareScroll){
+            prepareScroll = document.getElementById('teacher-bar');
+          }
+          let curLi = prepareScroll.querySelector('ul').children[index-1];
+          if (curLi.className == 'active' && confirm("是否重复发送此内容？") === false) {
+            return false
+          }
           // 开始上传
           this.$store.commit('UPDATE_LOADING', true);
           // start
@@ -191,4 +202,8 @@
               font-size: 14px;
               overflow: hidden;
               word-break: break-all;
+          .list-mark
+            i
+              px2px(font-size, 40px)
+              color: #2F57DA
 </style>

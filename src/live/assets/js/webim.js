@@ -42,6 +42,7 @@ export const vBigGroupMsgNotify = function(msgList) {
     let msg = msgList[i];
     webim.Log.warn('receive a new avchatroom group msg: ' + msg.getFromAccountNick());
     // 组装消息
+    console.log('foo', msg);
     this.$store.commit('UPDATE_MESSAGE', assembleMsg(msg));
   }
 };
@@ -53,6 +54,7 @@ export const onMsgNotify = function(newMsgList) {
     let msg = newMsgList[i];
     webim.Log.warn('receive a new chatroom group msg: ' + msg.getFromAccountNick());
     // 组装消息
+    console.log('bar', msg);
     this.$store.commit('UPDATE_MESSAGE', assembleMsg(msg));
   }
 };
