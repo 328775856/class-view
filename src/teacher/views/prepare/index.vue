@@ -786,7 +786,31 @@
           },
         }).then((json) => {
           if (json.ok) {
-            // 创建图片
+            if (this.iPoint) {
+              // 创建图片
+              this.$store.dispatch('fetchPrepareCreateImage', {
+                lesson_sn: this.lesson_sn,
+                content: json.body.key,
+                insert: this.prepareList[this.iPoint - 1].seqno,
+              }).then((data) => {
+                // 图片的上传成功
+                this.$store.commit('ADD_PREPARE_LIST', data);
+                this.cancleUploadImg();
+                this.getAllPrepareList();
+                this.iPointAdd();
+                // 启动滚动条
+                this.goToScroll();
+              }, (err) => {
+                swal({
+                  title: '错误提醒',
+                  text: err.message,
+                  confirmButtonText: '知道了',
+                });
+                //
+                this.cancleUploadImg();
+              });
+              return
+            }
             this.$store.dispatch('fetchPrepareCreateImage', {
               lesson_sn: this.lesson_sn,
               content: json.body.key,
