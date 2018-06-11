@@ -48,6 +48,7 @@
   // 定义滚动DOM
   let prepareScroll = null;
   let scrollTop = null;
+  let msg = '';
 
   export default {
     name: 'v-prepare',
@@ -287,28 +288,31 @@
       },
       focus(e) {
         e.currentTarget.className = 'active-text';
+        msg = e.target.innerHTML;
       },
       blurText(e, index) {
         e.currentTarget.className = 'text';
         if (e.target.innerHTML === '<br>') {
+          e.target.innerHTML = msg;
           swal({
             title: '消息提示',
-            text: '不能为空',
-            confirmButtonText: "知道了"
+            text: '值不能为空',
+            confirmButtonText: "知道了",
           });
-          this.$emit('getAllPrepareList');
+          msg = '';
           return;
         }
         this.$options.methods.changeText.bind(this)(e, index);
       },
       blurMark(e, index) {
+        e.currentTarget.className = 'textarea';
         if (e.target.innerHTML === '<br>') {
+          e.target.innerHTML = msg;
           swal({
             title: '消息提示',
             text: '不能为空',
             confirmButtonText: "知道了"
           });
-          this.$emit('getAllPrepareList');
           return;
         }
         e.currentTarget.className = 'textarea';
