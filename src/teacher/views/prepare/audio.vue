@@ -14,7 +14,7 @@
       </div>
       <div class="rd-audio-time duration">
         {{mu.state.lastTimeFormat}}
-            <span v-if="mu.state.duration">/{{mu.state.durationTimerFormat}}</span>
+        <span v-if="mu.state.duration">/{{mu.state.durationTimerFormat}}</span>
         <span v-if="!mu.state.duration">/. . .</span>
       </div>
     </div>

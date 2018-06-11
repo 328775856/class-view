@@ -63,6 +63,10 @@
           this.cancleBlobRecording();
           this.$store.commit('ADD_PREPARE_LIST', json);
           this.$emit('completeUpload');
+          // 启动滚动条
+          this.$emit('getAllPrepareList');
+          this.$emit('goToScroll');
+          this.$emit('iPointAdd');
           console.log('上传成功!');
         }).catch((error) => {
           // 异常
@@ -105,7 +109,7 @@
         background: #12b7f5;
         text-align: center;
         &.style2
-          height: 150px;
+          height: 180px;
         .audition
           display: block;
           padding: 10px 0 20px;
@@ -149,7 +153,7 @@
           display: -webkit-box;
           display: box;
           padding: 11px 0;
-          width: 100px;
+          width: 50%;
           font-size: 16px;
           line-height: 1;
           -webkit-box-flex: 1;

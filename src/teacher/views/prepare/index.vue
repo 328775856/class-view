@@ -8,7 +8,8 @@
       </div>
       <div id="prepare-body" class="prepare-body">
         <div class="prepare-content">
-          <v-prepare :prepareList="prepareList"></v-prepare>
+          <v-prepare @iPointMinus="iPointMinus" :iPoint="iPoint" :prepareList="prepareList"
+                     @getAllPrepareList="getAllPrepareList"></v-prepare>
         </div>
       </div>
       <div class="prepare-textarea">
@@ -17,7 +18,7 @@
         </div>
         <div class="textarea-more">
           <div class="insert-point">
-            <label for="i-point">插入点{{iPoint}}</label>
+            <label for="i-point">插入点</label>
             <input id="i-point" v-model="iPoint" size="3" placeholder="末尾" @keyup="numberOnly($event)">
           </div>
           <button class="box-send" @click="sendMsg" title="Ctrl+Enter或Alt+S" v-if="!msgSending">发送</button>
@@ -48,15 +49,17 @@
         </div>
       </div>
     </div>
-    <recording v-if="isRecording"></recording>
+    <recording v-if="isRecording" :iPoint="iPoint" :prepareList="prepareList" @goToScroll="goToScroll"
+               @getAllPrepareList="getAllPrepareList" @iPointAdd="iPointAdd"></recording>
     <audituon :auditionData="auditionData" @closeAudition="closeAudition" @completeUpload="startGoToScroll"
-              v-if="startAudituon"></audituon>
+              v-if="startAudituon" @goToScroll="goToScroll" @getAllPrepareList="getAllPrepareList"
+              @iPointAdd="iPointAdd"></audituon>
     <!-- 遮罩层 -->
     <div class="modal-dialog" v-if="markModalShow">
       <div class="modal-body-mark">
         <div class="textarea-frm">
           <div class="textarea">
-            <textarea v-model="markVal" placeholder="请输入书签文字(不超过12个文字)"></textarea>
+            <textarea v-model="markVal" placeholder="请输入书签文字(限12字)"></textarea>
           </div>
           <button class="box-send cancel" @click="isMarkModalShow">取消</button>
           <button class="box-send" @click="sendMark" title="Ctrl+Enter或Alt+S" v-if="!msgSending">发送</button>
@@ -70,9 +73,9 @@
         <div class="modal-img">
           <p class="modal-preview">
             <i class="iconfont icon-icons01" v-if="!imgInfo.src"></i>
-            <a class="preview" href="javascript:;"><img class="cursor" v-if="imgInfo.show"
-                                                        v-bind:src="imgInfo.src"/></a>
-            <input id="upd_pic" type="file" @change="imgOnChange" title="已选择图片" style="cursor:pointer"/>
+            <a class="preview" href="javascript:"><img class="cursor" v-if="imgInfo.show"
+                                                       v-bind:src="imgInfo.src"/></a>
+            <input id="upd_pic" type="file" @change="imgOnChange($event)" title="已选择图片" style="cursor:pointer"/>
           </p>
           <button class="upload" @click="startUploadImg" v-if="!startSend">上传图片</button>
           <button class="cancle cursor" @click="cancleUploadImg" v-if="!startSend"><i class="iconfont icon-guanbi"></i>
@@ -152,7 +155,7 @@
       ...mapGetters({
         isRecording: 'getRecording',
         prepareList: 'getPrepareList',
-      })
+      }),
     },
     data() {
       return {
@@ -179,12 +182,13 @@
           src: '',
           filename: '',
         },
-      }
+        len: 0
+      };
     },
     created() {
       this.$store.commit('CHANGE_IS_NOTICE', false);
       // 获取lesson_sn
-      let params = this.$route.params;
+      const params = this.$route.params;
       this.lesson_sn = params.lesson_sn;
       // 获取列表
       this.getAllPrepareList();
@@ -197,25 +201,25 @@
         // 获取备课列表
         this.$store.dispatch('fetchPrepareSlice', {lesson_sn: this.lesson_sn, limit: 0}).then((data) => {
           // 获取最后一个游标
-
+          this.len = data.length
         }, (err) => {
           // 异常
           swal({
             title: '错误提醒',
             text: err.message,
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           });
         });
       },
-      selectImage() {
+      selectImage(event) {
         // 开始预览
         this.imgOnChange(event);
       },
-      selectVideo() {
+      selectVideo(event) {
         // 开始上传视频
         this.videoOnChange(event);
       },
-      selectAudio() {
+      selectAudio(event) {
         // 开始上传视频
         this.audioOnChange(event);
       },
@@ -230,19 +234,19 @@
           swal({
             title: '错误提醒',
             text: '您的浏览器不支持File Api',
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           });
           return;
         }
         //
-        var uploadFiles = event.target;
-        var file = uploadFiles.files[0];
-        var el = this;
+        const uploadFiles = event.target;
+        const file = uploadFiles.files[0];
+        const el = this;
         // 是否有选择文件
         if (!file) {
           return;
         }
-        //先检查图片类型和大小
+        // 先检查图片类型和大小
         if (!checkPic(uploadFiles, file.size)) {
           return;
         }
@@ -254,21 +258,21 @@
       },
       videoOnChange(event) {
         //
-        var uploadFiles = event.target;
-        var file = uploadFiles.files[0];
-        var el = this;
+        const uploadFiles = event.target;
+        const file = uploadFiles.files[0];
+        const el = this;
         // 是否有选择文件
         if (!file) {
           return;
         }
-        //先检查图片类型和大小
+        // 先检查图片类型和大小
         if (!checkVideo(uploadFiles, file.size)) {
           return;
         }
         // 获取七牛token
         this.$store.dispatch('fetchPrepareDraft', {lesson_sn: this.lesson_sn}).then((data) => {
           // 开始上传视频
-          //this.postVideo(data, file);
+          // this.postVideo(data, file);
           // 开始操作
           this.videoInfo = {data, file};
           this.videoShow = true;
@@ -276,24 +280,24 @@
           swal({
             title: '错误提醒',
             text: err.message,
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           });
         });
         uploadFiles.value = '';
       },
       audioOnChange(event) {
         //
-        var uploadFiles = event.target;
-        var file = uploadFiles.files[0];
-        var el = this;
+        const uploadFiles = event.target;
+        const file = uploadFiles.files[0];
+        const el = this;
         // 是否有选择文件
         if (!file) {
           return;
         }
-        //先检查图片类型和大小
-        /*if (!checkVideo(uploadFiles, file.size)) {
+        // 先检查图片类型和大小
+        /* if (!checkVideo(uploadFiles, file.size)) {
           return;
-        }*/
+        } */
         // 获取七牛token
         this.$store.dispatch('fetchPrepareDraft', {lesson_sn: this.lesson_sn}).then((data) => {
           // 开始上传音频
@@ -302,14 +306,14 @@
           swal({
             title: '错误提醒',
             text: err.message,
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           });
         });
         uploadFiles.value = '';
       },
       previewImg(el, file) {
-        //预览图片
-        var reader = new FileReader();
+        // 预览图片
+        const reader = new FileReader();
         reader.onload = (function (file) {
           return function (e) {
             el.imgInfo.show = true;
@@ -317,19 +321,19 @@
             el.imgInfo.filename = file.name;
             el.imgInfo.file = file;
           };
-        })(file);
-        //预览图片
+        }(file));
+        // 预览图片
         reader.readAsDataURL(file);
       },
       startUploadImg() {
-        var file = this.imgInfo.file;
+        const file = this.imgInfo.file;
 
-        //先检查图片类型和大小
+        // 先检查图片类型和大小
         if (!file) {
           return swal({
             title: '错误提醒',
             text: '请先上传图片',
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           });
         }
         // 开始上传
@@ -343,13 +347,13 @@
           swal({
             title: '错误提醒',
             text: err.message,
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           });
         });
       },
       postImg(data, file) {
-        //创建formData对象
-        var formData = new FormData();
+        // 创建formData对象
+        const formData = new FormData();
         formData.append('file', file);
         formData.append('key', data.key);
         formData.append('token', data.token);
@@ -358,14 +362,39 @@
         // 开始上传图片
         this.$http.post(data.upload, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         }).then((json) => {
           if (json.ok) {
+            if (this.iPoint) {
+              // 创建图片
+              this.$store.dispatch('fetchPrepareCreateImage', {
+                lesson_sn: this.lesson_sn,
+                content: json.body.key,
+                insert: this.prepareList[this.iPoint - 1].seqno,
+              }).then((data) => {
+                // 图片的上传成功
+                this.$store.commit('ADD_PREPARE_LIST', data);
+                this.cancleUploadImg();
+                this.getAllPrepareList();
+                this.iPointAdd();
+                // 启动滚动条
+                this.goToScroll();
+              }, (err) => {
+                swal({
+                  title: '错误提醒',
+                  text: err.message,
+                  confirmButtonText: '知道了',
+                });
+                //
+                this.cancleUploadImg();
+              });
+              return
+            }
             // 创建图片
             this.$store.dispatch('fetchPrepareCreateImage', {
               lesson_sn: this.lesson_sn,
-              content: json.body.key
+              content: json.body.key,
             }).then((data) => {
               // 图片的上传成功
               this.$store.commit('ADD_PREPARE_LIST', data);
@@ -376,44 +405,73 @@
               swal({
                 title: '错误提醒',
                 text: err.message,
-                confirmButtonText: "知道了"
+                confirmButtonText: '知道了',
               });
               //
               this.cancleUploadImg();
             });
           } else {
-            new Error('Fetch_Upload_Image failure')
+            new Error('Fetch_Upload_Image failure');
           }
         }).catch((error) => {
           swal({
             title: '错误提醒',
             text: '上传图片失败!',
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           }, () => {
             this.$store.commit('FINISH_LOADING');
           });
         });
       },
       postVideo(data, file, compress) {
-        //创建formData对象
-        var formData = new FormData();
+        // 创建formData对象
+        const formData = new FormData();
         formData.append('file', file);
         formData.append('key', data.key);
         formData.append('token', data.token);
         // 开始上传
-        //this.$store.commit('START_LOADING');
+        // this.$store.commit('START_LOADING');
         // 开始上传图片
         this.$http.post(data.upload, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         }).then((json) => {
           if (json.ok) {
+            if (this.iPoint) { // 创建video
+              this.$store.dispatch('fetchPrepareCreateVideo', {
+                compress,
+                lesson_sn: this.lesson_sn,
+                content: json.body.key,
+                insert: this.prepareList[this.iPoint - 1].seqno,
+              }).then((data) => {
+                // 结束上传
+                this.startSend = false;
+                this.cancleUploadVideo();
+                // video的上传成功
+                this.$store.commit('ADD_PREPARE_LIST', data);
+                // 启动滚动条
+                this.getAllPrepareList();
+                this.goToScroll();
+                this.iPointAdd();
+              }, (err) => {
+                // 结束上传
+                this.startSend = false;
+                this.cancleUploadVideo();
+                //
+                swal({
+                  title: '错误提醒',
+                  text: err.message,
+                  confirmButtonText: '知道了',
+                });
+              });
+              return;
+            }
             // 创建video
             this.$store.dispatch('fetchPrepareCreateVideo', {
-              compress: compress,
+              compress,
               lesson_sn: this.lesson_sn,
-              content: json.body.key
+              content: json.body.key,
             }).then((data) => {
               // 结束上传
               this.startSend = false;
@@ -430,17 +488,17 @@
               swal({
                 title: '错误提醒',
                 text: err.message,
-                confirmButtonText: "知道了"
+                confirmButtonText: '知道了',
               });
             });
           } else {
-            new Error('Fetch_Upload_Video failure')
+            new Error('Fetch_Upload_Video failure');
           }
         }).catch((error) => {
           swal({
             title: '错误提醒',
             text: '上传视频失败!',
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           }, () => {
             // 结束上传
             this.startSend = false;
@@ -450,8 +508,8 @@
         });
       },
       postAudio(data, file) {
-        //创建formData对象
-        var formData = new FormData();
+        // 创建formData对象
+        const formData = new FormData();
         formData.append('file', file);
         formData.append('key', data.key);
         formData.append('token', data.token);
@@ -460,25 +518,36 @@
         // 开始上传音频
         this.$http.post(data.upload, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         }).then((json) => {
           if (json.ok) {
+            if (this.iPoint) {
+              this.auditionData = {
+                lesson_sn: this.lesson_sn,
+                content: json.body.key,
+                url: data.url,
+                insert: this.prepareList[this.iPoint - 1].seqno,
+              };
+              this.startAudituon = true;
+              this.$store.commit('FINISH_LOADING');
+              return;
+            }
             this.auditionData = {
               lesson_sn: this.lesson_sn,
               content: json.body.key,
-              url: data.url
+              url: data.url,
             };
             this.startAudituon = true;
             this.$store.commit('FINISH_LOADING');
           } else {
-            new Error('Fetch_Upload_Radio failure')
+            new Error('Fetch_Upload_Radio failure');
           }
         }).catch((error) => {
           swal({
             title: '错误提醒',
             text: '上传音频失败!',
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           }, () => {
             this.$store.commit('FINISH_LOADING');
           });
@@ -495,54 +564,20 @@
         this.imgInfo.show = false;
         this.imgInfo.src = '';
       },
+      // 打开发送状态
       sendMsg() {
-        // 打开发送状态
         if (trimStr(this.msgVal)) {
           this.msgSending = true;
         }
         // 获取备课列表
         if (this.iPoint) {
-          if (this.iPoint > this.prepareList.length || this.iPoint < 1) {
-            swal({
-              title: '错误提醒',
-              text: '输入不正确，请重新输入',
-              confirmButtonText: '知道了',
-            });
-            this.msgSending = false;
-          } else {
-            this.$store.dispatch('fetchPrepareCreateText', {
-              lesson_sn: this.lesson_sn,
-              content: this.msgVal,
-              insert: this.prepareList[this.iPoint - 1].seqno,
-            }).then((data) => {
-              // 发送成功
-              this.msgVal = '';
-              // 添加
-              this.$store.commit('ADD_PREPARE_LIST', data);
-              // 关闭发送状态
-              this.msgSending = false;
-              // 启动滚动条
-              this.goToScroll();
-              // 重新获取列表
-              this.getAllPrepareList();
-              this.iPoint = Number(this.iPoint);
-              this.iPoint += 1;
-            }, (err) => {
-              // 关闭发送状态
-              this.msgSending = false;
-              // 异常
-              swal({
-                title: '错误提醒',
-                text: err.message,
-                confirmButtonText: '知道了',
-              });
-            });
-          }
-        } else {
+          this.msgSending = false;
           this.$store.dispatch('fetchPrepareCreateText', {
             lesson_sn: this.lesson_sn,
             content: this.msgVal,
+            insert: this.prepareList[this.iPoint - 1].seqno,
           }).then((data) => {
+            //  http:// web.sandbox.yike.fm:8686/teacher.html#/course/prepare/L5b14df9b584b8
             // 发送成功
             this.msgVal = '';
             // 添加
@@ -551,6 +586,9 @@
             this.msgSending = false;
             // 启动滚动条
             this.goToScroll();
+            // 重新获取列表
+            this.getAllPrepareList();
+            this.iPointAdd();
           }, (err) => {
             // 关闭发送状态
             this.msgSending = false;
@@ -558,10 +596,33 @@
             swal({
               title: '错误提醒',
               text: err.message,
-              confirmButtonText: '知道了'
+              confirmButtonText: '知道了',
             });
           });
+          return;
         }
+        this.$store.dispatch('fetchPrepareCreateText', {
+          lesson_sn: this.lesson_sn,
+          content: this.msgVal,
+        }).then((data) => {
+          // 发送成功
+          this.msgVal = '';
+          // 添加
+          this.$store.commit('ADD_PREPARE_LIST', data);
+          // 关闭发送状态
+          this.msgSending = false;
+          // 启动滚动条
+          this.goToScroll();
+        }, (err) => {
+          // 关闭发送状态
+          this.msgSending = false;
+          // 异常
+          swal({
+            title: '错误提醒',
+            text: err.message,
+            confirmButtonText: '知道了',
+          });
+        });
       },
       isMarkModalShow() {
         this.markModalShow = !this.markModalShow;
@@ -570,6 +631,35 @@
         // 打开发送状态
         if (trimStr(this.markVal)) {
           this.msgSending = true;
+        }
+        if (this.iPoint) {
+          this.$store.dispatch('fetchPrepareCreateMark', {
+            lesson_sn: this.lesson_sn,
+            content: this.markVal,
+            insert: this.prepareList[this.iPoint - 1].seqno,
+          }).then((data) => {
+            // 发送成功
+            this.markVal = '';
+            // 添加
+            this.$store.commit('ADD_PREPARE_LIST', data);
+            // 关闭发送状态
+            this.msgSending = false;
+            // 启动滚动条
+            this.getAllPrepareList();
+            this.goToScroll();
+            this.iPointAdd();
+            this.markModalShow = false;
+          }, (err) => {
+            // 关闭发送状态
+            this.msgSending = false;
+            // 异常
+            swal({
+              title: '错误提醒',
+              text: err.message,
+              confirmButtonText: '知道了',
+            });
+          });
+          return;
         }
         this.$store.dispatch('fetchPrepareCreateMark', {
           lesson_sn: this.lesson_sn,
@@ -582,8 +672,9 @@
           // 关闭发送状态
           this.msgSending = false;
           // 启动滚动条
+          this.getAllPrepareList();
           this.goToScroll();
-          this.markModalShow = false
+          this.markModalShow = false;
         }, (err) => {
           // 关闭发送状态
           this.msgSending = false;
@@ -591,12 +682,12 @@
           swal({
             title: '错误提醒',
             text: err.message,
-            confirmButtonText: '知道了'
+            confirmButtonText: '知道了',
           });
         });
       },
       v_keydown(event) {
-        let e = event || window.event;
+        const e = event || window.event;
         // 快捷键 ctrl+enter
         if (e.ctrlKey && e.keyCode === 13) {
           this.sendMsg();
@@ -610,7 +701,9 @@
         // 添加到事件对象中的访问系统剪贴板的接口
         let clipboardData = event.clipboardData,
           i = 0,
-          items, item, types;
+          items,
+          item,
+          types;
         // 是否有数据
         if (clipboardData) {
           items = clipboardData.items;
@@ -637,18 +730,18 @@
           swal({
             title: '错误提醒',
             text: '您的浏览器不支持File Api',
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           });
           return;
         }
-        let el = this;
-        let blob = item.getAsFile();
-        //先检查图片类型和大小
+        const el = this;
+        const blob = item.getAsFile();
+        // 先检查图片类型和大小
         if (!checkPastePic(blob, blob.size)) {
           return;
         }
-        //预览图片
-        let reader = new FileReader();
+        // 预览图片
+        const reader = new FileReader();
         reader.onload = (function () {
           return function (e) {
             el.pasteInfo.show = true;
@@ -656,8 +749,8 @@
             el.pasteInfo.blob = blob;
             el.pasteInfo.filename = blob.name;
           };
-        })();
-        //预览图片
+        }());
+        // 预览图片
         reader.readAsDataURL(blob);
       },
       startUploadPaste() {
@@ -674,13 +767,13 @@
           swal({
             title: '错误提醒',
             text: err.message,
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           });
         });
       },
       postPasteImg(data, file) {
-        //创建formData对象
-        var formData = new FormData();
+        // 创建formData对象
+        const formData = new FormData();
         formData.append('file', file);
         formData.append('key', data.key);
         formData.append('token', data.token);
@@ -689,14 +782,14 @@
         // 开始上传图片
         this.$http.post(data.upload, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data'
-          }
+            'Content-Type': 'multipart/form-data',
+          },
         }).then((json) => {
           if (json.ok) {
             // 创建图片
             this.$store.dispatch('fetchPrepareCreateImage', {
               lesson_sn: this.lesson_sn,
-              content: json.body.key
+              content: json.body.key,
             }).then((data) => {
               // 图片的上传成功
               this.$store.commit('ADD_PREPARE_LIST', data);
@@ -711,17 +804,17 @@
               swal({
                 title: '错误提醒',
                 text: err.message,
-                confirmButtonText: "知道了"
+                confirmButtonText: '知道了',
               });
             });
           } else {
-            new Error('Fetch_Upload_Image failure')
+            new Error('Fetch_Upload_Image failure');
           }
         }).catch((error) => {
           swal({
             title: '错误提醒',
             text: '上传图片失败!',
-            confirmButtonText: "知道了"
+            confirmButtonText: '知道了',
           }, () => {
             this.$store.commit('FINISH_LOADING');
           });
@@ -735,16 +828,23 @@
         this.pasteInfo.filename = '';
       },
       goToScroll(scrollHeight) {
+        let top = 0;
         // 是否有
         if (!prepareScroll) {
           prepareScroll = document.getElementById('prepare-body');
         }
-        //
+        if (this.iPoint) {
+          top = prepareScroll.scrollTop;
+        }
+
         setTimeout(() => {
           if (scrollHeight) {
             prepareScroll.scrollTop = scrollHeight;
           } else {
             prepareScroll.scrollTop = prepareScroll.scrollHeight;
+          }
+          if (this.iPoint) {
+            prepareScroll.scrollTop = top;
           }
         }, 100);
       },
@@ -754,7 +854,7 @@
           swal({
             title: '错误提醒',
             text: '文件未选取，请选择后重试!',
-            confirmButtonText: '知道了'
+            confirmButtonText: '知道了',
           });
         }
         // 开始上传
@@ -765,10 +865,23 @@
         this.videoShow = false;
       },
       numberOnly(e) {
-        this.iPoint = e.currentTarget.value.replace(/[^\d]/g, '')
+        if (this.iPoint > this.prepareList.length || this.iPoint < 1) {
+          e.currentTarget.value = '';
+        }
+        this.iPoint = e.currentTarget.value.replace(/[^\d]/g, '');
+      },
+      iPointAdd() {
+        this.iPoint = Number(this.iPoint);
+        this.iPoint += 1;
+      },
+      iPointMinus() {
+        this.iPoint = Number(this.iPoint);
+        if (this.iPoint > 1 && this.iPoint <= this.len) {
+          this.iPoint -= 1;
+        }
       },
     },
-  }
+  };
 </script>
 
 <style lang="stylus" rel="stylesheet/stylus">

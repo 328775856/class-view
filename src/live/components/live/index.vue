@@ -19,14 +19,6 @@
     <!-- player -->
     <v-player v-if="playingAudio"></v-player>
     <!-- live entity -->
-    <div class="btn-bookmark" @click="bookmark.show = !bookmark.show" :class="{active: bookmark.show}">
-      <i class="iconfont icon-list"></i>
-    </div>
-    <div class="frm-bookmark" v-show="bookmark.show && bookmarkList.length">
-      <div v-for="item in bookmarkList" :key="item.cursor" @click="scrollBookmark(item.cursor)">
-        {{item.text}}
-      </div>
-    </div>
     <div class="live-body" id="live-body" :class="{'owner':isOwner}" @click="handleBody">
       <!--<p class="pullMsgs" v-if="canPullMsgs"><a href="javascript:;" @click="pullMsgs">点击拉取历史消息</a></p>-->
       <!-- header -->
@@ -37,6 +29,14 @@
       <p class="pullMsgs" v-if="canUpPullMsgs && !firstLoad && canUp">
         <img :src="loadImg"/>
       </p>
+      <div class="btn-bookmark" @click="bookmark.show = !bookmark.show" :class="{active: bookmark.show}" v-if="bookmarkList.length">
+        <i class="iconfont icon-list"></i>
+      </div>
+      <div class="frm-bookmark" v-show="bookmark.show && bookmarkList.length">
+        <div v-for="item in bookmarkList" :key="item.cursor" @click="scrollBookmark(item.cursor)">
+          {{item.text}}
+        </div>
+      </div>
       <!-- message entity -->
       <ul class="live-sms-list" id="live_sms_list" v-bind:class="{'commentShow':commentShow,'big':(commentType==2)}"
           @click="hidePop">
@@ -53,6 +53,7 @@
               <span class="inline-block">
                 <span class="nickname">{{msg.nickname}}</span>
                 <span class="time">{{timeFormat(msg.time)}}</span>
+                <i class="delete iconfont icon-105" v-if="isOwner" @click="deleteRecord(msg.cursor)"></i>
               </span>
             </div>
             <div class="sms-content" :class="msg.content" v-for="con in msg.content">
@@ -293,6 +294,7 @@
         'userAvatar',
         'commentType',
         'footerConf',
+        'liveHost',
       ])
     },
     mounted() {
@@ -677,6 +679,18 @@
         let opt = {};
         opt[account] = avatar;
         this.$store.commit('UPDATE_USER_AVATAR', opt);
+      },
+      deleteRecord(cursor) {
+        console.log('delete record', cursor)
+        if (!confirm("是否删除此条内容？")) {
+          return false
+        }
+        this.$http.post(`${this.liveHost}/live-delete`, {cursor: cursor})
+          .then((res) =>{
+            if (res.ok && res.body.error === '0') {
+              document.querySelector(`#m-${cursor}`).remove()
+            }
+        })
       },
       recursion(i, length, msgList) {
         if (i > length) {
@@ -1251,6 +1265,12 @@
                     case 'lessonStep':
                       this.lessonInfo.step = msg.content[0].MsgContent;
                       break;
+                    case 'deleteRecord':
+                      let obj = document.querySelector(`#m-${msg.content[0].MsgContent}`)
+                      if (obj) {
+                        obj.remove()
+                      }
+                      break;
                   }
                   msg.isSystem = true;
                 }
@@ -1343,8 +1363,12 @@
     background: #fff;
 
   .is-pc .btn-bookmark
-    top: 95px;
-    left, 735px;
+    top: 105px;
+    right: initial;
+    margin-left: 520px;
+  .is-pc .owner .btn-bookmark {
+    top: 175px;
+  }
   .btn-bookmark > i, .bookmark > i{
     px2px(font-size, 50px);
     color: #2F57DA;
@@ -1359,8 +1383,8 @@
     z-index: 99;
     background: #fff;
     width: 100%;
-    px2px(max-height, 450px);
-    px2px(font-size, 50px);
+    px2px(max-height, 550px);
+    px2px(font-size, 40px);
     overflow-y: scroll;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
@@ -1368,8 +1392,11 @@
     border-top: 1px solid #2F57DA;
     box-shadow: 0 10px 10px #fff;
   .is-pc .frm-bookmark {
-    top: 125px;
+    top: 135px;
     width: 570px;
+  }
+  .is-pc .owner .frm-bookmark {
+    top: 205px;
   }
 
   .frm-bookmark > div {
@@ -1389,9 +1416,11 @@
     z-index: 9;
     background: #fff;
     px2px(height, 70px);
-    px2px(font-size, 50px);
+    px2px(font-size, 40px);
     /*padding-left: 0 !important;*/
     border-left: 10px solid #2F57DA;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   li.is-system.is-bookmark {
@@ -1402,7 +1431,7 @@
   }
 
   .is-pc li.is-bookmark {
-    top: 20px;
-    padding-left: 0 !important;
+    top: 30px;
+    padding-left: 10px !important;
   }
 </style>

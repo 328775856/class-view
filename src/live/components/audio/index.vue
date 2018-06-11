@@ -7,6 +7,7 @@
       </div>
       <div class="rd-audio-contrl">
           <div class="rd-audio-slider-container" @click="touchSlider">
+            <div class="rd-audio-slider-header"></div>
               <div class="rd-audio-slider">
                   <div class="rd-audio-slider-rail">
                       <div class="rd-audio-slider-rail-inner" :style="{ 'width': mu.state.progress + '%' }"></div>

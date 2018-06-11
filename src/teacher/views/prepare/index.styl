@@ -323,11 +323,34 @@
 
   .text {
     border: 0;
+    width: 430px;
+    padding: 0;
+    font-size: 16px;
+    text-align: justify;
+  }
+
+  .textarea {
+    border: 0;
+    width: 414px;
+    font-size: 16px;
+    text-align: justify;
+    padding: 0;
+    margin-top :7px;
   }
 
   .active-text {
     border: 1px solid lightskyblue;
     border-radius: 5px;
+    height: auto;
+    text-align: justify;
+  }
+  #tag+.active-text {
+    border: 1px solid lightskyblue;
+    border-radius: 5px;
+    height: auto;
+    text-align: justify;
+    width: 414px;
+    margin-top :7px;
   }
   #tag {
     width auto;
@@ -339,7 +362,4 @@
     font-size: 14px;
     cursor: default;
   }
-  #tag + input {
-    width: 414px;
-    padding-bottom: 4px;
-  }
+

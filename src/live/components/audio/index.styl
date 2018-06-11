@@ -84,6 +84,12 @@
         margin-top: 20px;
         margin-right: 15px;
     }
+    .rd-audio-slider-header{
+      width :2px;
+      height :15%;
+      background: #2f57da;
+    }
+
     .rd-audio-slider {
         position: relative;
         width: 100%;
@@ -91,15 +97,25 @@
     .rd-audio-slider-rail {
         width: 100%;
         height: 4px;
-        background: #d0f1fd;
+        background: #B2BEEF;
         border-radius: 4px;
         -webkit-border-radius: 4px;
     }
     .rd-audio-slider-rail-inner {
+        position :relative;
         height: 100%;
         width: 0%;
-        background: #12b7f5;
+        background: #2f57da;
         transition: width 16ms;
+    }
+    .rd-audio-slider-rail-inner:after {
+        content :'';
+        width :3px;
+        height:10px;
+        background #2f57da;
+        position absolute;
+        top -3px;
+        right -3px;
     }
     .rd-audio-time.current,
     .rd-audio-time.duration {
@@ -277,6 +293,11 @@
     height: 30px;
     top: 4px;
     left: 7px;
+  }
+  .rd-audio-player-btn:before{
+    background :#2F57DA;
+    color :#fff;
+    border-radius :30px
   }
   .rd-audio-contrl {
     margin-top: -7px;

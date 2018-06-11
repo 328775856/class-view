@@ -17,11 +17,15 @@
           您的浏览器不支持 video 标签。
         </video>
       </div>
-      <span  id="tag"  v-if="list.type === 'mark'" class="iconfont icon-bookmark"></span>
-      <input type="text" class="text" v-if="list.type === 'text'" :value="textFormat(list.content)"
-             @focus="focus" @blur="blurText($event, index)"/>
-      <input type="text" class="text" v-if="list.type === 'mark'" :value="textFormat(list.content)"
-             @focus="focus" @blur="blurMark($event, index)"/>
+      <span id="tag" v-if="list.type === 'mark'" class="iconfont icon-bookmark"></span>
+      <div class="text" v-if="list.type === 'text'" contenteditable="true" @focus="focus($event)"
+           @blur="blurText($event, index)">
+        {{textFormat(list.content)}}
+      </div>
+      <div class="textarea" v-if="list.type === 'mark'" contenteditable="true" @focus="focus($event)"
+           @blur="blurMark($event, index)">
+        {{textFormat(list.content)}}
+      </div>
       <div class="handle">
         <span class="disabled" v-if="index === 1"><i class="iconfont icon-shangyi"></i></span>
         <span class="cursor-pointer" title="上移" @click="handUp(index)" v-if="index > 1"><i
@@ -49,8 +53,11 @@
     name: 'v-prepare',
     props: {
       prepareList: {
-        type: null
-      }
+        type: null,
+      },
+      iPoint: {
+        type: null,
+      },
     },
     components: {
       vAudio
@@ -60,7 +67,7 @@
     },
     data() {
       return {
-        lesson_sn: ''
+        lesson_sn: '',
       };
     },
     created() {
@@ -228,6 +235,10 @@
             setTimeout(() => {
               this.$store.commit('UPDATE_PREPARE_LIST', newList);
             }, 100);
+            if (typeof this.iPoint === 'object') {
+              return;
+            }
+            this.$emit('iPointMinus');
           }, (err) => {
             swal({
               title: '错误提醒',
@@ -265,7 +276,7 @@
         }, 100);
       },
       textFormat(value) {
-        return value.replace(/\n/g, '<br>');
+        return value.replace(/(<br>)/g, '');
       },
       showNote(value) {
         swal({
@@ -279,16 +290,34 @@
       },
       blurText(e, index) {
         e.currentTarget.className = 'text';
+        if (e.target.innerHTML === '<br>') {
+          swal({
+            title: '消息提示',
+            text: '不能为空',
+            confirmButtonText: "知道了"
+          });
+          this.$emit('getAllPrepareList');
+          return;
+        }
         this.$options.methods.changeText.bind(this)(e, index);
       },
       blurMark(e, index) {
-        e.currentTarget.className = 'text';
+        if (e.target.innerHTML === '<br>') {
+          swal({
+            title: '消息提示',
+            text: '不能为空',
+            confirmButtonText: "知道了"
+          });
+          this.$emit('getAllPrepareList');
+          return;
+        }
+        e.currentTarget.className = 'textarea';
         this.$options.methods.changeMark.bind(this)(e, index);
       },
       changeText(e, index) {
         this.$store.dispatch('fetchPrepareCreateText', {
           lesson_sn: this.lesson_sn,
-          content: e.currentTarget.value,
+          content: e.target.innerHTML,
           update: this.prepareList[index - 1].seqno
         }).then((data) => {
           // console.log(data);
@@ -300,11 +329,12 @@
             confirmButtonText: "知道了"
           });
         });
+        this.$emit('getAllPrepareList');
       },
       changeMark(e, index) {
         this.$store.dispatch('fetchPrepareCreateMark', {
           lesson_sn: this.lesson_sn,
-          content: e.currentTarget.value,
+          content: e.currentTarget.innerHTML,
           update: this.prepareList[index - 1].seqno
         }).then((data) => {
           // console.log(data);
@@ -316,6 +346,7 @@
             confirmButtonText: "知道了"
           });
         });
+        this.$emit('getAllPrepareList');
       }
     },
   };

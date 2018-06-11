@@ -2,7 +2,7 @@
   <div class="loading">
     <div class="loading-dialog">
       <div class="loading-audio" :class="{'style2':blobRecord}">
-        <img :src="`${assetsHost}static/live/_static/live/img/recorder.gif`" v-show="!blobRecord" />
+        <img :src="`${assetsHost}static/live/_static/live/img/recorder.gif`" v-show="!blobRecord"/>
         <span v-show="blobRecord" class="audition">试听</span>
         <div class="time" v-if="!recorderStatus" v-text="recorderTimer"></div>
         <audio id="save" controls v-show="blobRecord"></audio>
@@ -22,7 +22,8 @@
         <button v-if="blobRecord && !audioCompressComplete" class="gray cursor-default">上传中...</button>
       </div>
       <button class="cancle" @click="cancleRecording" v-if="!blobRecord"><i class="iconfont icon-guanbi"></i></button>
-      <button class="cancle" @click="cancleBlobRecording" v-if="blobRecord && !uploading"><i class="iconfont icon-guanbi"></i></button>
+      <button class="cancle" @click="cancleBlobRecording" v-if="blobRecord && !uploading"><i
+        class="iconfont icon-guanbi"></i></button>
       <!-- 遮罩 -->
       <div class="uploading" v-if="uploading">
         <span class="progress">
@@ -33,8 +34,8 @@
   </div>
 </template>
 <script>
-  import { toggleRecording } from '@teacher/assets/js/recorder';
-  import { mapGetters } from 'vuex';
+  import {toggleRecording} from '@teacher/assets/js/recorder';
+  import {mapGetters} from 'vuex';
   import swal from 'sweetalert';
 
   // 定义滚动DOM
@@ -42,15 +43,14 @@
 
   export default {
     name: 'recording',
-    props: {
-    },
-    data(){
+    props: ['iPoint', 'prepareList'],
+    data() {
       return {
-        //stop: false,
+        // stop: false,
         remark: '',
         sendWidth: 0,
         uploading: false,
-      }
+      };
     },
     computed: {
       ...mapGetters({
@@ -60,7 +60,7 @@
         recorderTimer: 'getRecorderTimer',
         audioCompressComplete: 'getAudioCompressComplete',
         assetsHost: 'getAssetsHost',
-      })
+      }),
     },
     created() {
       this.$store.commit('UPDATE_RECORDER_STATUS', false);
@@ -82,7 +82,19 @@
         // 开始上传
         // 打开上传状态
         this.uploading = true;
-        let body = { note: this.remark, ...this.audioCompressComplete };
+        let body = {};
+        if (this.iPoint) {
+          body = {
+            note: this.remark,
+            ...this.audioCompressComplete,
+            insert: this.prepareList[this.iPoint - 1].seqno,
+          };
+        } else {
+          body = {
+            note: this.remark,
+            ...this.audioCompressComplete,
+          };
+        }
         // 开始
         this.$store.dispatch('fetchPrepareCreateAudio', body).then((json) => {
           // 音频的上传
@@ -90,26 +102,30 @@
           this.$store.commit('UPDATE_BLOB_RECORDING', null);
           this.$store.commit('ADD_PREPARE_LIST', json);
           // 是否有
-          if(!prepareScroll){
+          if (!prepareScroll) {
             prepareScroll = document.getElementById('prepare-body');
           }
           //
-          setTimeout(()=>{
+          setTimeout(() => {
             prepareScroll.scrollTop = prepareScroll.scrollHeight;
           }, 100);
           console.log('上传成功!');
+          // 启动滚动条
+          this.$emit('getAllPrepareList');
+          this.$emit('goToScroll');
+          this.$emit('iPointAdd');
         }).catch((error) => {
           // 异常
           swal({
             title: '错误提醒',
-            text: error.message?error.message:'网络链接失败!',
-            confirmButtonText: "知道了"
+            text: error.message ? error.message : '网络链接失败!',
+            confirmButtonText: '知道了',
           });
           // 关闭上传状态
           this.uploading = false;
         });
-      }
-    }
+      },
+    },
   };
 </script>
 
@@ -117,11 +133,11 @@
   .loading
     display: flex;
     -webkit-display: flex;
-    align-items:center;
+    align-items: center;
     justify-content: center;
     z-index: 4;
     opacity: 1;
-    background-color: rgba(0,0,0,.3);
+    background-color: rgba(0, 0, 0, .3);
     px2px(font-size, 32px);
     .loading-dialog
       position: relative;
@@ -133,13 +149,13 @@
         width: 100%;
         height: 100%;
         z-index: 5;
-        background-color: rgba(255,255,255,.3);
+        background-color: rgba(255, 255, 255, .3);
       .loading-audio
         height: 100px;
         background: #12b7f5;
         text-align: center;
         &.style2
-          height: 150px;
+          height: 180px;
         .audition
           display: block;
           padding: 10px 0 20px;
@@ -153,7 +169,7 @@
           display: block;
           padding-top: 10px;
           color: #fff;
-          >*
+          > *
             vertical-align: middle;
           textarea
             width: 290px;
@@ -183,7 +199,7 @@
           display: -webkit-box;
           display: box;
           padding: 11px 0;
-          width: 100px;
+          width: 50%;
           font-size: 16px;
           line-height: 1;
           -webkit-box-flex: 1;
@@ -208,7 +224,7 @@
           &.cursor-default {
             cursor: default;
           }
-        button+button
+        button + button
           border-left: 1px solid #e6eaf2;
       .progress
         position: absolute;
