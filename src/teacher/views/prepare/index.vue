@@ -49,9 +49,9 @@
         </div>
       </div>
     </div>
-    <recording v-if="isRecording" :iPoint="iPoint" :prepareList="prepareList" @goToScroll="goToScroll"
-               @getAllPrepareList="getAllPrepareList" @iPointAdd="iPointAdd"></recording>
-    <audituon :auditionData="auditionData" @closeAudition="closeAudition" @completeUpload="startGoToScroll"
+    <recording v-if="isRecording" :iPoint="iPoint" :prepareList="prepareList" @getAllPrepareList="getAllPrepareList"
+               @iPointAdd="iPointAdd" @goToScroll="goToScroll"></recording>
+    <audituon :iPoint="iPoint" :auditionData="auditionData" @closeAudition="closeAudition" @completeUpload="startGoToScroll"
               v-if="startAudituon" @goToScroll="goToScroll" @getAllPrepareList="getAllPrepareList"
               @iPointAdd="iPointAdd"></audituon>
     <!-- 遮罩层 -->
@@ -201,7 +201,7 @@
         // 获取备课列表
         this.$store.dispatch('fetchPrepareSlice', {lesson_sn: this.lesson_sn, limit: 0}).then((data) => {
           // 获取最后一个游标
-          this.len = data.length
+          this.len = data.length;
         }, (err) => {
           // 异常
           swal({
@@ -389,6 +389,7 @@
                 //
                 this.cancleUploadImg();
               });
+              this.$options.methods.jumpScrollTop.bind(this)(this.iPoint - 1)
               return
             }
             // 创建图片
@@ -465,6 +466,7 @@
                   confirmButtonText: '知道了',
                 });
               });
+              this.$options.methods.jumpScrollTop.bind(this)(this.iPoint - 1)
               return;
             }
             // 创建video
@@ -531,6 +533,7 @@
               };
               this.startAudituon = true;
               this.$store.commit('FINISH_LOADING');
+              this.$options.methods.jumpScrollTop.bind(this)(this.iPoint - 1)
               return;
             }
             this.auditionData = {
@@ -556,6 +559,15 @@
       startGoToScroll() {
         // 滚动
         this.goToScroll();
+      },
+      jumpScrollTop(index) {
+        const prepareBody = document.getElementById('prepare-body');
+        // alert(prepareBody.scrollTop = prepareBody.querySelector('ul').children[index].clientHeight)
+        // alert(prepareBody.querySelector('ul').children[index].querySelector('div').clientHeight)
+        // 找到指定的children
+        setTimeout(() => {
+          prepareBody.scrollTop = prepareBody.querySelector('ul').children[index].offsetTop - 130;
+        }, 100);
       },
       cancleUploadImg() {
         this.startSend = false;
@@ -599,6 +611,7 @@
               confirmButtonText: '知道了',
             });
           });
+          this.$options.methods.jumpScrollTop.bind(this)(this.iPoint - 1)
           return;
         }
         this.$store.dispatch('fetchPrepareCreateText', {
@@ -611,6 +624,8 @@
           this.$store.commit('ADD_PREPARE_LIST', data);
           // 关闭发送状态
           this.msgSending = false;
+          // 重新获取列表
+          this.getAllPrepareList();
           // 启动滚动条
           this.goToScroll();
         }, (err) => {
@@ -659,6 +674,7 @@
               confirmButtonText: '知道了',
             });
           });
+          this.$options.methods.jumpScrollTop.bind(this)(this.iPoint - 1)
           return;
         }
         this.$store.dispatch('fetchPrepareCreateMark', {
@@ -795,11 +811,15 @@
               }).then((data) => {
                 // 图片的上传成功
                 this.$store.commit('ADD_PREPARE_LIST', data);
-                this.cancleUploadImg();
                 this.getAllPrepareList();
                 this.iPointAdd();
                 // 启动滚动条
                 this.goToScroll();
+                this.pasteInfo.blob = null;
+                this.pasteInfo.show = false;
+                this.pasteInfo.src = '';
+                this.pasteInfo.filename = '';
+                this.startSend = false;
               }, (err) => {
                 swal({
                   title: '错误提醒',
@@ -809,7 +829,8 @@
                 //
                 this.cancleUploadImg();
               });
-              return
+              this.$options.methods.jumpScrollTop.bind(this)(this.iPoint - 1)
+              return;
             }
             this.$store.dispatch('fetchPrepareCreateImage', {
               lesson_sn: this.lesson_sn,

@@ -31,7 +31,7 @@ module.exports = {
     assetsPublicPath: '/',
     proxyTable: {
       '/api':{
-        target: 'https://teacher.sandbox.yike.fm',
+         target: 'https://teacher.sandbox.yike.fm',
         // target: 'https://teacher.yike.fm',
         // target: 'https://sandbox.yike.fm',
         // target: 'http://student.we-class.local',

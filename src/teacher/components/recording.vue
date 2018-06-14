@@ -101,19 +101,16 @@
           this.$store.commit('UPDATE_RECORDING', false);
           this.$store.commit('UPDATE_BLOB_RECORDING', null);
           this.$store.commit('ADD_PREPARE_LIST', json);
-          // 是否有
-          if (!prepareScroll) {
-            prepareScroll = document.getElementById('prepare-body');
-          }
-          //
-          setTimeout(() => {
-            prepareScroll.scrollTop = prepareScroll.scrollHeight;
-          }, 100);
           console.log('上传成功!');
           // 启动滚动条
           this.$emit('getAllPrepareList');
-          this.$emit('goToScroll');
-          this.$emit('iPointAdd');
+          if (this.iPoint) {
+            this.$emit('iPointAdd');
+            prepareScroll = document.getElementById('prepare-body');
+            prepareScroll.scrollTop = prepareScroll.querySelector('ul').children[this.iPoint - 1].offsetTop - 130;
+          } else {
+            this.$emit('goToScroll');
+          }
         }).catch((error) => {
           // 异常
           swal({

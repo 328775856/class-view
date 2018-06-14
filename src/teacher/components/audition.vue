@@ -33,8 +33,11 @@
       auditionData: {
         type: null,
       },
+      iPoint: {
+        type: String,
+      },
     },
-    data(){
+    data() {
       return {
         remark: '',
         sendWidth: 0,
@@ -65,14 +68,15 @@
           this.$emit('completeUpload');
           // 启动滚动条
           this.$emit('getAllPrepareList');
-          this.$emit('goToScroll');
-          this.$emit('iPointAdd');
+          if (this.iPoint) {
+            this.$emit('iPointAdd');
+          }
           console.log('上传成功!');
         }).catch((error) => {
           // 异常
           swal({
             title: '错误提醒',
-            text: error.message?error.message:'网络链接失败!',
+            text: error.message ? error.message : '网络链接失败!',
             confirmButtonText: "知道了"
           });
           // 关闭上传状态
@@ -87,11 +91,11 @@
   .loading
     display: flex;
     -webkit-display: flex;
-    align-items:center;
+    align-items: center;
     justify-content: center;
     z-index: 4;
     opacity: 1;
-    background-color: rgba(0,0,0,.3);
+    background-color: rgba(0, 0, 0, .3);
     px2px(font-size, 32px);
     .loading-dialog
       position: relative;
@@ -103,7 +107,7 @@
         width: 100%;
         height: 100%;
         z-index: 5;
-        background-color: rgba(255,255,255,.3);
+        background-color: rgba(255, 255, 255, .3);
       .loading-audio
         height: 100px;
         background: #12b7f5;
@@ -123,7 +127,7 @@
           display: block;
           padding-top: 10px;
           color: #fff;
-          >*
+          > *
             vertical-align: middle;
           textarea
             width: 290px;
@@ -178,7 +182,7 @@
           &.cursor-default {
             cursor: default;
           }
-        button+button
+        button + button
           border-left: 1px solid #e6eaf2;
       .progress
         position: absolute;

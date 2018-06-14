@@ -1,6 +1,6 @@
 <template>
   <ul>
-    <li v-for="(list, index) in prepareList">
+    <li v-for="(list, index) in prepareList" :key="index">
       <span>No.{{++index}}</span>
       <!--<p v-text="list.tms"></p>-->
       <div class="audio" v-if="list.type === 'audio'">
@@ -18,14 +18,22 @@
         </video>
       </div>
       <span id="tag" v-if="list.type === 'mark'" class="iconfont icon-bookmark"></span>
-      <div class="text" v-if="list.type === 'text'" contenteditable="true" @focus="focus($event)"
-           @blur="blurText($event, index)">
-        {{textFormat(list.content)}}
+      <div class="text" v-if="list.type === 'text'" @click="changeTextarea($event, index)"
+           v-html="textFormat(list.content)">
       </div>
-      <div class="textarea" v-if="list.type === 'mark'" contenteditable="true" @focus="focus($event)"
-           @blur="blurMark($event, index)">
-        {{textFormat(list.content)}}
+      <textarea v-show="isTextarea" v-if="list.type === 'text'" class="text"
+                :value="textFormat(list.content)"
+                @blur="blurText($event, index)">
+      </textarea>
+      <div class="textarea" v-if="list.type === 'mark'" @click="changeTextarea($event, index)"
+           v-html="textFormat(list.content)">
       </div>
+      <textarea v-show="isTextarea" v-if="list.type === 'mark'" class="text"
+                :value="textFormat(list.content)"
+                @blur="blurMark($event, index)">
+      </textarea>
+      <textarea v-show="isTextarea" v-if="list.type !== 'text'&&list.type !== 'mark'">
+      </textarea>
       <div class="handle">
         <span class="disabled" v-if="index === 1"><i class="iconfont icon-shangyi"></i></span>
         <span class="cursor-pointer" title="上移" @click="handUp(index)" v-if="index > 1"><i
@@ -49,6 +57,8 @@
   let prepareScroll = null;
   let scrollTop = null;
   let msg = '';
+  let temp = {};
+  let textareaList = [];
 
   export default {
     name: 'v-prepare',
@@ -69,6 +79,7 @@
     data() {
       return {
         lesson_sn: '',
+        isTextarea: false,
       };
     },
     created() {
@@ -236,7 +247,7 @@
             setTimeout(() => {
               this.$store.commit('UPDATE_PREPARE_LIST', newList);
             }, 100);
-            if (typeof this.iPoint === 'object') {
+            if (typeof this.iPoint === 'object' || this.iPoint === '') {
               return;
             }
             this.$emit('iPointMinus');
@@ -277,7 +288,7 @@
         }, 100);
       },
       textFormat(value) {
-        return value.replace(/(<br>)/g, '');
+        return value.replace(/\n/g, '<br>');
       },
       showNote(value) {
         swal({
@@ -286,14 +297,23 @@
           confirmButtonText: "知道了"
         });
       },
+      changeTextarea(e, index) {
+        temp = e.target
+        temp.id = 'hide'
+        textareaList = document.getElementsByTagName('textarea')[index - 1]
+        textareaList.className = 'active-text';
+        textareaList.style.display = 'block';
+        textareaList.focus();
+        textareaList.style.height = textareaList.scrollHeight + 'px';
+        // prepareScroll.style.height = textareaList.scrollHeight + 'px';
+      },
       focus(e) {
         e.currentTarget.className = 'active-text';
-        msg = e.target.innerHTML;
+        msg = e.target.value;
       },
       blurText(e, index) {
-        e.currentTarget.className = 'text';
-        if (e.target.innerHTML === '<br>') {
-          e.target.innerHTML = msg;
+        if (e.target.value === '<br>') {
+          e.target.value = msg;
           swal({
             title: '消息提示',
             text: '值不能为空',
@@ -303,11 +323,13 @@
           return;
         }
         this.$options.methods.changeText.bind(this)(e, index);
+        e.currentTarget.className = 'text';
+        textareaList.style.display = 'none';
+        temp.id = '';
       },
       blurMark(e, index) {
-        e.currentTarget.className = 'textarea';
-        if (e.target.innerHTML === '<br>') {
-          e.target.innerHTML = msg;
+        if (e.target.value === '<br>') {
+          e.target.value = msg;
           swal({
             title: '消息提示',
             text: '不能为空',
@@ -315,16 +337,19 @@
           });
           return;
         }
-        e.currentTarget.className = 'textarea';
         this.$options.methods.changeMark.bind(this)(e, index);
+        e.currentTarget.className = 'textarea';
+        textareaList.style.display = 'none';
+        temp.id = ''
       },
       changeText(e, index) {
         this.$store.dispatch('fetchPrepareCreateText', {
           lesson_sn: this.lesson_sn,
-          content: e.target.innerHTML,
-          update: this.prepareList[index - 1].seqno
+          content: e.target.value,
+          update: this.prepareList[index - 1].seqno,
         }).then((data) => {
           // console.log(data);
+          this.$emit('getAllPrepareList');
         }, (err) => {
           // 异常
           swal({
@@ -333,14 +358,14 @@
             confirmButtonText: "知道了"
           });
         });
-        this.$emit('getAllPrepareList');
       },
       changeMark(e, index) {
         this.$store.dispatch('fetchPrepareCreateMark', {
           lesson_sn: this.lesson_sn,
-          content: e.currentTarget.innerHTML,
+          content: e.currentTarget.value,
           update: this.prepareList[index - 1].seqno
         }).then((data) => {
+          this.$emit('getAllPrepareList');
           // console.log(data);
         }, (err) => {
           // 异常
@@ -350,7 +375,6 @@
             confirmButtonText: "知道了"
           });
         });
-        this.$emit('getAllPrepareList');
       }
     },
   };

@@ -118,6 +118,7 @@
       font-size: 14px;
       outline: none;
       border: 0 none;
+      resize : none
   .box-more
     display: inline-block;
     padding-right: 10px;
@@ -288,8 +289,13 @@
     }
   }
 
+  .box-more .icon-bookmark
+    padding-bottom: 2px;
+
   .icon-bookmark:before
     cursor: pointer;
+    font-size: 21px;
+    border: 1px solid;
 
   .modal-body-mark
     width: 30%;
@@ -308,6 +314,7 @@
       background: #12b7f5;
       cursor: pointer;
     .textarea
+      width: auto
       background: #fff;
       padding: 5px 10px;
       border: 1px solid #e6eaf2;
@@ -327,6 +334,7 @@
     padding: 0;
     font-size: 16px;
     text-align: justify;
+    line-height: 20px
   }
 
   .textarea {
@@ -335,23 +343,25 @@
     font-size: 16px;
     text-align: justify;
     padding: 0;
-    margin-top :7px;
     word-break break-all;
+    line-height: 20px;
+    -webkit-box-align: center;
   }
 
   .active-text {
-    width: 430px;
+    width: 420px;
     border: 1px solid lightskyblue;
     border-radius: 5px;
     text-align: justify;
     word-break break-all;
+    resize:none
   }
-  #tag+.active-text {
+  #tag + .active-text {
     border: 1px solid lightskyblue;
     border-radius: 5px;
     text-align: justify;
     width: 414px;
-    margin-top :7px;
+    margin-top: 7px;
   }
   #tag {
     width auto;
@@ -363,4 +373,15 @@
     font-size: 14px;
     cursor: default;
   }
+  #hide {
+    display: none;
+  }
 
+  .prepare-content textarea {
+    overflow-y: scroll;
+    margin-top: 5px;
+    text-align: justify;
+    font-size: 16px;
+    line-height: 20px;
+    resize:none
+  }
