@@ -302,10 +302,10 @@
         temp.id = 'hide'
         textareaList = document.getElementsByTagName('textarea')[index - 1]
         textareaList.className = 'active-text';
+        textareaList.value = textareaList.value.replace(/<br>/g, '\n')
         textareaList.style.display = 'block';
         textareaList.focus();
         textareaList.style.height = textareaList.scrollHeight + 'px';
-        // prepareScroll.style.height = textareaList.scrollHeight + 'px';
       },
       focus(e) {
         e.currentTarget.className = 'active-text';

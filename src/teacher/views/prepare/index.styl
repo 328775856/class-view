@@ -320,6 +320,7 @@
       border: 1px solid #e6eaf2;
       border-radius: 4px;
       -webkit-border-radius: 4px;
+      resize : none;
     textarea
       padding: 0;
       width: 100%;
@@ -327,14 +328,17 @@
       font-size: 14px;
       outline: none;
       border: 0 none;
+      resize : none;
 
   .text {
     border: 0;
     width: 430px;
+    heigh: 100%;
     padding: 0;
     font-size: 16px;
     text-align: justify;
-    line-height: 20px
+    line-height: 20px;
+    -webkit-box-align: center;
   }
 
   .textarea {
@@ -384,4 +388,13 @@
     font-size: 16px;
     line-height: 20px;
     resize:none
+  }
+  .prepare-body ul li div,.prepare-body ul li span{
+    height: 100%;
+  }
+  #prepare-body li,#prepare-body .handle{
+    display :flex;
+    flex-direction row
+    justify-content center;
+    align-items :center
   }
