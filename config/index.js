@@ -24,36 +24,36 @@ module.exports = {
   },
   dev: {
     env: require('./dev.env'),
-    port: 8080,
-    host: 'web.sandbox.yike.fm',
+    port: 8686,
+    host: '0.0.0.0',
     autoOpenBrowser: false,
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {
       '/api':{
-         target: 'https://teacher.sandbox.yike.fm',
         // target: 'https://teacher.yike.fm',
-        // target: 'https://sandbox.yike.fm',
+        //  target: 'https://student.sandbox.yike.fm',
+        // target: 'https://teacher.sandbox.yike.fm',
+         target: 'https://sandbox.yike.fm',
         // target: 'http://student.we-class.local',
         secure: false,
         changeOrigin: true,
         pathRewrite: {
           '^/api':''
         },
+        /*
         onProxyReq(proxyReq, req, res) {
           // req.headers['X-SESS'] = 'U5969c94a79dbc-259b112df965dc1.02336968';
-         // proxyReq.setHeader('X-SESS', 'U5ac978083c5c1-650015ae95a56194454.29845678');
-         // proxyReq.setHeader('X-SESS', 'U5acdd14c33dd6-100595af24eb27b6b44.12012715');
-         // proxyReq.setHeader('X-SESS', 'U597982a817efe-145aa09fa7e86071.64897926');
-         // let ua = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36'
-         //   // || 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_2_5 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) Mobile/15D60 MicroMessenger/6.6.5 NetType/WIFI Language/zh_CN'
-         //  proxyReq.setHeader('User-Agent', ua);
+          proxyReq.setHeader('X-SESS', 'U597982a817efe-145aa09fa7e86071.64897926');
+          let ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.186 Safari/537.36';
+          proxyReq.setHeader('User-Agent', ua);
 
         },
         onProxyRes(proxyRes, req, res) {
           proxyRes.headers['Access-Control-Request-Origin'] = '*';
           proxyRes.headers['Access-Control-Request-Headers'] = '*';
         }
+        */
       }
     },
     // CSS Sourcemaps off by default because relative paths are "buggy"

@@ -52,11 +52,14 @@
         disabled: true,
         showMore: false,
         showLoading: false,
+        liveHost: (process.env.NODE_ENV=='production'?process.env.LIVE_HOST.replace(/\/$/,'/live'):'/live.html'),
         studentShareHost: (process.env.NODE_ENV=='production'?process.env.STUDENT_HOST:'/student.html?'),
         signUpHost:(process.env.TEACHER_HOST ? process.env.TEACHER_HOST.replace(/\/$/,'') : 'https://teacher.sandbox.yike.fm/'),
       };
     },
     created() {
+      window.location.href = `${process.env.LIVE_HOST}lesson/series?sn=${this.$route.params.series_sn}&origin=${this.$route.query.origin || ''}`
+      return
       // 获取路由参数
       let params = this.$route.params;
       // 开始获取详情

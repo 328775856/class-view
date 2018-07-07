@@ -60,9 +60,10 @@
       };
     },
     created() {
+      window.location.href = `${process.env.LIVE_HOST}lesson/detail?sn=${this.$route.query.lesson_sn}&origin=${this.$route.query.origin || ''}`;
       // 初始化
-      this.getDetailInfo();
-      this.adShow = this.getQueryString('ad');
+      // this.getDetailInfo();
+      // this.adShow = this.getQueryString('ad');
     },
     watch: {
       '$route': 'reloadData' //切换路由，调用reloadData方法

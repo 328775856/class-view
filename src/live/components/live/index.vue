@@ -29,7 +29,8 @@
       <p class="pullMsgs" v-if="canUpPullMsgs && !firstLoad && canUp">
         <img :src="loadImg"/>
       </p>
-      <div class="btn-bookmark" @click="bookmark.show = !bookmark.show" :class="{active: bookmark.show}" v-if="bookmarkList.length">
+      <div class="btn-bookmark" @click="bookmark.show = !bookmark.show" :class="{active: bookmark.show}"
+           v-if="bookmarkList.length">
         <i class="iconfont icon-list"></i>
       </div>
       <div class="frm-bookmark" v-show="bookmark.show && bookmarkList.length">
@@ -58,7 +59,8 @@
             </div>
             <div class="sms-content" :class="msg.content" v-for="con in msg.content">
               <div class="content-text" v-text="con.text" v-if="con.type==msg.MSG_ELEMENT_TYPE.GROUP_TIP"></div>
-              <div class="content-text" v-html="textFormat(con.text)" v-if="con.type==msg.MSG_ELEMENT_TYPE.TEXT"></div>
+              <div class="content-text markdown" v-html="textFormat(con.text)"
+                   v-if="con.type==msg.MSG_ELEMENT_TYPE.TEXT"></div>
               <div class="content-text" v-if="con.type==msg.MSG_ELEMENT_TYPE.FILE">
                 <a v-for="file in con.fileArr" :href="file.url" target="__blank">点击下载</a>
               </div>
@@ -77,7 +79,7 @@
                     </a>
                   </div>
                   <div class="custom-video is-pc-video" v-if="cus.type == 'VIDEO'"
-                       @click="videoClick($event, 'id-'+cus.id)">
+                       @click="videoClick($event, 'id-'+cus.id, isPC)">
                     <video class="video-js vjs-default-skin"
                            :id="'id-'+cus.id" :poster="parseVideoPoster(cus.src)" :data-source="cus.src"
                            :data-id="'id-'+cus.id">
@@ -126,7 +128,7 @@
           </div>
           <div class="bookmark" v-if="msg.isSystem && msg.bookmark" :id="'mark-'+msg.bookmark.id">
             <!--<i>·</i>-->
-            <span >{{msg.bookmark.text}}</span>
+            <span>{{msg.bookmark.text}}</span>
           </div>
         </li>
         <!-- 尾注 -->
@@ -199,6 +201,8 @@
   import vEvaluate from '@live/components/live/evaluate.vue';
   import vLoading from '@live/components/loading/index.vue';
   import {setStore, getStore, removeStore} from '@lib/js/mUtils';
+
+  const markdown = require('markdown-it')({html: true})
   // spec
   var debounceTime = null;
   var curScrollTop = null;
@@ -339,36 +343,60 @@
       }
     },
     updated() {
-      this.videoInit();
+      this.videoInit(isPC);
     },
     methods: {
       check(msg) {
         console.log('check', msg)
       },
-      videoClick($event, id) {
+      videoClick($event, id, isPC) {
         var player = videojs.players[id];
-        if ($event.target.className !== 'vjs-icon-placeholder') {
-          if (player.paused()) {
-            player.play();
+        if (!isPC) {
+          if ($event.target.className !== 'vjs-icon-placeholder') {
+            if (player.paused()) {
+              player.play();
+            }
           }
         }
       },
-      videoInit() {
+      videoInit(isPC) {
         var videos = document.getElementsByClassName('video-js');
-        // var the = this
+        var newbtn = document.createElement('btn');
+        newbtn.className = 'flex-row'
+        newbtn.innerHTML = `<select class="playbackRate" id="rangeButton" >
+                              <option>0.5</option>
+                              <option selected>1</option>
+                              <option>5</option>
+                              <option>10</option>
+                              </select>`;
+        //  var the = this
         for (var i = 0; i < videos.length; i++) {
           var id = videos[i].getAttribute('data-id');
           if (!videojs.players[id]) {
+            var newbtn = document.createElement('btn');
+            newbtn.className = 'flex-row'
+            newbtn.innerHTML = `<select class="playbackRate" id="rangeButton" >
+                              <option>0.5</option>
+                              <option selected>1</option>
+                              <option>5</option>
+                              <option>10</option>
+                              </select>`;
             var player = videojs(id, {controls: true});
+            player.el_.querySelector('.vjs-control-bar').appendChild(newbtn)
             player.on('play', (e) => {
               // e.target.firstElementChild.setAttribute('x5-video-player-type', null);
               e.target.firstElementChild.style.display = 'block';
+              e.target.firstElementChild.parentNode.querySelector('#rangeButton').onchange = function () {
+                e.target.firstElementChild.playbackRate = this.value;
+              }
               this.pauseAudioPlaying();
             });
             player.on('pause', (e) => {
               // player.children_[0].setAttribute('x5-video-player-type', 'h5')
               // e.target.firstElementChild.setAttribute('x5-video-player-type', 'h5');
-              e.target.firstElementChild.style.display = 'none';
+              if (!isPC) {
+                e.target.firstElementChild.style.display = 'none';
+              }
             });
           }
         }
@@ -663,7 +691,8 @@
         this.handleShow = show;
       },
       textFormat(value) {
-        return value.replace(/\n/g, '<br>');
+        return markdown.render(value || '').replace(new RegExp("(?<!>)\n(?!<)", "g"), '*');
+        // return value.replace(/\n/g, '<br>');
       },
       handleBody() {
         if (this.boxMoreShow) {
@@ -686,11 +715,11 @@
           return false
         }
         this.$http.post(`${this.liveHost}/live-delete`, {cursor: cursor})
-          .then((res) =>{
+          .then((res) => {
             if (res.ok && res.body.error === '0') {
               document.querySelector(`#m-${cursor}`).remove()
             }
-        })
+          })
       },
       recursion(i, length, msgList) {
         if (i > length) {
@@ -1366,17 +1395,21 @@
     top: 105px;
     right: initial;
     margin-left: 520px;
+
   .is-pc .owner .btn-bookmark {
     top: 175px;
   }
-  .btn-bookmark > i, .bookmark > i{
+
+  .btn-bookmark > i, .bookmark > i {
     px2px(font-size, 50px);
     color: #2F57DA;
   }
+
   .btn-bookmark.active
     background: #2F57DA;
     .iconfont
       color: #fff !important;
+
   .frm-bookmark
     position: fixed;
     px2px(top, 100px);
@@ -1391,10 +1424,12 @@
     border: 1px solid #fff;
     border-top: 1px solid #2F57DA;
     box-shadow: 0 10px 10px #fff;
+
   .is-pc .frm-bookmark {
     top: 135px;
     width: 570px;
   }
+
   .is-pc .owner .frm-bookmark {
     top: 205px;
   }
@@ -1433,5 +1468,42 @@
   .is-pc li.is-bookmark {
     top: 30px;
     padding-left: 10px !important;
+  }
+
+  .markdown li:before {
+    padding: 0 .1rem;
+    margin-left: -.2rem;
+    content: "•";
+    color: #5774ed;
+  }
+
+  .markdown li {
+    padding: .5em !important;
+  }
+
+  .markdown a {
+    color: #2f57da;
+    text-decoration: underline;
+  }
+
+  .markdown img {
+    max-width: 100%;
+  }
+
+  .flex-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .playbackRate {
+    font-size: 1em;
+    color: rgb(153, 153, 153);
+    padding: 0.3% 2% 0.3% 1%;
+    margin: 0; /*这里是选择框里面的样式*/
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none; /*这三个是隐藏默认样式*/
   }
 </style>

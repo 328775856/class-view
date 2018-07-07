@@ -20,6 +20,7 @@
       })
     },
     created() {
+      window.location.href = window.location.href = `${process.env.LIVE_HOST}lesson/home`
       // 已经请求过就返回
       if(this.courseList.length)return;
       this.$store.dispatch('fetchCourseList').then(() => {

@@ -1,42 +1,48 @@
 <template>
   <div class="rd-audio-player">
-      <audio :id="id" :data-index="index" preload="none"></audio>
-      <!--<audio :id="id" :data-index="index" preload="none" v-if="isWeiXin && isPC"></audio>-->
-      <div class="rd-audio-cover" @click="touchCover">
-          <button class="rd-audio-player-btn" transition="bounce" :class="{'pause':state.playing}"></button>
-      </div>
-      <div class="rd-audio-contrl">
-          <div class="rd-audio-slider-container" @click="touchSlider">
-            <div class="rd-audio-slider-header"></div>
-              <div class="rd-audio-slider">
-                  <div class="rd-audio-slider-rail">
-                      <div class="rd-audio-slider-rail-inner" :style="{ 'width': mu.state.progress + '%' }"></div>
-                  </div>
-              </div>
+    <audio :id="id" :data-index="index" preload="none"></audio>
+    <!--<audio :id="id" :data-index="index" preload="none" v-if="isWeiXin && isPC"></audio>-->
+    <div class="rd-audio-cover" @click="touchCover">
+      <button class="rd-audio-player-btn" transition="bounce" :class="{'pause':state.playing}"></button>
+    </div>
+    <div class="rd-audio-contrl">
+      <div class="rd-audio-slider-container" @click="touchSlider">
+        <div class="rd-audio-slider-header"></div>
+        <div class="rd-audio-slider">
+          <div class="rd-audio-slider-rail">
+            <div class="rd-audio-slider-rail-inner" :style="{ 'width': mu.state.progress + '%' }"></div>
           </div>
-          <div class="rd-audio-time duration">
-            {{mu.state.lastTimeFormat}}
-            <span v-if="mu.state.duration">/{{mu.state.durationTimerFormat}}</span>
-            <span v-if="!mu.state.duration">/. . .</span>
-          </div>
+        </div>
       </div>
-      <div class="buffer" v-if="buffering">
-        <div class="double-bounce1"></div>
-        <div class="double-bounce2"></div>
+      <div class="rd-audio-time duration">
+        {{mu.state.lastTimeFormat}}
+        <span v-if="mu.state.duration">/{{mu.state.durationTimerFormat}}</span>
+        <span v-if="!mu.state.duration">/. . .</span>
       </div>
-      <div class="iconfont icon-dot" v-if="!played"></div>
+      <select class="playbackRate" id="rangeButton" @change="speed($event)">
+        <option>0.5</option>
+        <option selected>1</option>
+        <option>5</option>
+        <option>10</option>
+      </select>
+    </div>
+    <div class="buffer" v-if="buffering">
+      <div class="double-bounce1"></div>
+      <div class="double-bounce2"></div>
+    </div>
+    <div class="iconfont icon-dot" v-if="!played"></div>
   </div>
 </template>
 
 <script type="text/javascript">
-  import { mapState } from 'vuex';
-  import { setStore, getStore } from '@lib/js/mUtils';
+  import {mapState} from 'vuex';
+  import {setStore, getStore} from '@lib/js/mUtils';
   import VueAudio from './vueAudio.js';
 
   const pad = (val) => {
     val = Math.floor(val)
     if (val < 10) {
-        return '0' + val
+      return '0' + val
     }
     return val + ''
   }
@@ -47,8 +53,7 @@
     return pad(min) + ':' + pad(sec)
   }
 
-  export default
-  {
+  export default {
     name: 'v-audio',
     props: {
       id: {
@@ -64,8 +69,7 @@
         type: Boolean
       },
     },
-    components: {
-    },
+    components: {},
     computed: {
       ...mapState([
         'audioPause',
@@ -110,7 +114,7 @@
       // 初始化audio
       let refs = this.$parent.$refs;
       let audios = refs.audios;
-      this.initAudio = Array.isArray(audios)?[...audios]:audios;
+      this.initAudio = Array.isArray(audios) ? [...audios] : audios;
     },
     mounted() {
       this.init();
@@ -119,7 +123,7 @@
 
     },
     methods: {
-      init () {
+      init() {
         this.mu = new VueAudio(this.src, {
           preload: false,
           autoplay: false,
@@ -127,13 +131,13 @@
           loop: false,
           volume: 1,
           audio: document.getElementById(this.id),
-          ended: ()=>{
+          ended: () => {
             this.ended()
           },
-          pause: ()=>{
+          pause: () => {
             this.pause();
           },
-          error: ()=>{
+          error: () => {
             console.log('error+');
             this.audioError()
           },
@@ -142,47 +146,48 @@
         let _audio = getStore(`audio-${this.id}`);
         let audios = this.initAudio;
         // 开始
-        if(_audio){
+        if (_audio) {
           _audio = JSON.parse(_audio);
           this.played = _audio.played || false;
-        }else{
+        } else {
           // 是否是历史记录
-          if(this.history)return;
-          if(Array.isArray(audios)){
-            let audio = audios[audios.length-1];
-            if(audio.played && audio.isEnd && !this.videoPlaying){
+          if (this.history) return;
+          if (Array.isArray(audios)) {
+            let audio = audios[audios.length - 1];
+            if (audio.played && audio.isEnd && !this.videoPlaying) {
               // 播放
               this.play();
             }
           }
-        };
+        }
+        ;
       },
-      touchCover () {
-          if (this.state.playing) {
-              this.pause()
-          } else {
-              this.prePlay()
-          }
+      touchCover() {
+        if (this.state.playing) {
+          this.pause()
+        } else {
+          this.prePlay()
+        }
       },
-      touchSlider (e) {
-          let time = e.layerX / e.target.offsetWidth * this.mu.state.duration
-          this.mu.setTime(time)
+      touchSlider(e) {
+        let time = e.layerX / e.target.offsetWidth * this.mu.state.duration
+        this.mu.setTime(time)
       },
-      prePlay () {
+      prePlay() {
         // 开始播放
         this.play();
       },
-      play () {
+      play() {
         var self = this;
         // 是否需要打上预加载
-        if(self.mu.$Audio && self.mu.$Audio.getAttribute('preload') == 'none'){
+        if (self.mu.$Audio && self.mu.$Audio.getAttribute('preload') == 'none') {
           console.log('preload-->auto');
           self.mu.$Audio.setAttribute('preload', 'auto');
         }
         // 所有组件暂停
         self.pausePlaying();
         // 下一个组件预加载
-        if(!this.isPC){
+        if (!this.isPC) {
           self.nextLoad();
         }
         // 正在播放
@@ -192,12 +197,12 @@
         // 重置加载次数
         self.mu.state.playStateCount = 0;
         // 是否是首次加载
-        if(self.firstLoad){
-          let isMobileDevice = (navigator.userAgent.match(/(iPhone|iPad|ios|Android)/i) == null)?false:true;
+        if (self.firstLoad) {
+          let isMobileDevice = (navigator.userAgent.match(/(iPhone|iPad|ios|Android)/i) == null) ? false : true;
           // 是否是ios设备
-          if(!isMobileDevice){
-              // 是否已经播放过
-            if(!self.played){
+          if (!isMobileDevice) {
+            // 是否已经播放过
+            if (!self.played) {
               setStore(`audio-${self.id}`, {played: true});
               self.played = true;
             }
@@ -219,8 +224,8 @@
           (function observerAudio() {
             let time = new Date().getTime();
             // 是否已经加载好
-            if(self.mu.$Audio.readyState < 2){
-              if(isWeiXin && count<1){
+            if (self.mu.$Audio.readyState < 2) {
+              if (isWeiXin && count < 1) {
                 timeStart = new Date().getTime();
                 // ios开始加载
                 //self.mu.$Audio.load();
@@ -228,25 +233,27 @@
                   self.mu.$Audio.play();
                   count++;
                 });
-              }else if((time-timeStart) > 6000){
-                if(reCount<10){
+              } else if ((time - timeStart) > 6000) {
+                if (reCount < 10) {
                   self.mu.$Audio.load();
-                }else{
+                } else {
                   self.buffering = false;
                   self.pause();
                   return;
                 }
                 reCount++;
               }
-              if(self.state.playing){
-                setTimeout(function(){observerAudio();}, 500);
+              if (self.state.playing) {
+                setTimeout(function () {
+                  observerAudio();
+                }, 500);
               }
-            }else{
+            } else {
               self.buffering = false;
               // 是否正在播放
-              if(!self.state.playing)return;
+              if (!self.state.playing) return;
               // 是否已经播放过
-              if(!self.played){
+              if (!self.played) {
                 setStore(`audio-${self.id}`, {played: true});
                 self.played = true;
               }
@@ -257,18 +264,18 @@
               self.firstLoad = false;
             }
           })();
-        }else{
+        } else {
           // 记住正在播放的audio
           self.$store.commit('UPDATE_PLAYER', self);
           self.mu.play();
         }
       },
-      pause () {
+      pause() {
         this.state.playing = false;
         this.buffering = false;
         this.mu.pause();
       },
-      ended () {
+      ended() {
         // 清楚正在播放的audio记录
         this.$store.commit('UPDATE_PLAYER', null);
         this.isEnd = true;
@@ -281,13 +288,13 @@
         let audios = refs.audios;
         let canPlay = false;
         // 遍历所有audio
-        if(Array.isArray(audios)){
-          for(let au of audios){
-            if(canPlay){
+        if (Array.isArray(audios)) {
+          for (let au of audios) {
+            if (canPlay) {
               au.play();
               break;
             }
-            if(au.id == this.id){
+            if (au.id == this.id) {
               canPlay = true;
             }
           }
@@ -299,13 +306,13 @@
         let audios = refs.audios;
         let canLoad = false;
         // 遍历所有audio
-        if(Array.isArray(audios)){
-          for(let au of audios){
-            if(canLoad){
+        if (Array.isArray(audios)) {
+          for (let au of audios) {
+            if (canLoad) {
               au.preLoad();
               break;
             }
-            if(au.id == this.id){
+            if (au.id == this.id) {
               canLoad = true;
             }
           }
@@ -323,9 +330,9 @@
         let refs = this.$parent.$refs;
         let audios = refs.audios;
         // 遍历所有audio
-        if(Array.isArray(audios)){
-          for(let au of audios){
-            if(au.state.playing){
+        if (Array.isArray(audios)) {
+          for (let au of audios) {
+            if (au.state.playing) {
               au.pause();
             }
           }
@@ -341,9 +348,23 @@
 //      volminus () {
 //          this.mu.setVolume(this.mu.state.volume - 0.1)
 //      }
+      speed(e) {
+        console.log(refs)
+      }
     },
   };
 </script>
+<style scoped>
+  .playbackRate {
+    font-size: .6em;
+    color: rgb(153, 153, 153);
+    padding: 0.3% 2% 0.3% 1%;
+    margin: 18px 0 0 8px;
+    appearance: none;
+    -moz-appearance: none;
+    -webkit-appearance: none; /*这三个是隐藏默认样式*/
+  }
+</style>
 <style lang="stylus" rel="stylesheet/stylus">
   @import "index.styl";
 </style>
